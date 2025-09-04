@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anyaka • Interactive Profile</title>
+  <meta name="description" content="Anyaka bull  —." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>✨</text></svg>">
+  <style>
+    :root{
+      --bg: #0f1220;
+      --panel: #171a2b;
+      --text: #e7e9ff;
+      --muted: #9aa1c6;
+      --brand: #8b8dff;
+      --accent: #24d3ee;
+      --ring: rgba(139,141,255,.35);
+    }
+    [data-theme="light"]{
+      --bg: #f7f8ff;
+      --panel: #ffffff;
+      --text: #0f1220;
+      --muted: #5b6287;
+      --brand: #585bff;
+      --accent: #06b6d4;
+      --ring: rgba(88,91,255,.25);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background: radial-gradient(1200px 600px at 80% -10%, rgba(139,141,255,.20), transparent 60%),
+      radial-gradient(1000px 500px at 10% 10%, rgba(36,211,238,.18), transparent 60%), var(--bg);
+      color:var(--text); font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      cursor: none; /* we will draw our own dot cursor */
+    }
+    a{color:var(--brand); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    /* Layout */
+    header{position:sticky; top:0; z-index:50; backdrop-filter: blur(10px); background: color-mix(in oklab, var(--bg) 70%, transparent); border-bottom:1px solid rgba(255,255,255,.06)}
+    .wrap{max-width:1100px; margin-inline:auto; padding:18px 20px}
+    .row{display:flex; align-items:center; gap:14px}
+    .spacer{flex:1}
+    button, .btn{appearance:none; border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 92%, transparent), color-mix(in oklab, var(--panel) 100%, transparent)); color:var(--text); padding:10px 14px; border-radius:14px; font-weight:600; letter-spacing:.2px; box-shadow: 0 6px 20px rgba(0,0,0,.12); transition:.2s transform, .2s box-shadow, .2s border-color}
+    button:hover, .btn:hover{transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0,0,0,.18); border-color: var(--ring)}
+
+    .hero{padding:48px 20px 24px}
+    .title{font-size: clamp(28px, 4vw, 48px); line-height:1.1; margin:8px 0}
+    .subtitle{font-size: clamp(14px, 1.8vw, 18px); color:var(--muted)}
+
+    .card{background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 96%, transparent), color-mix(in oklab, var(--panel) 100%, transparent)); border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; box-shadow: 0 12px 30px rgba(0,0,0,.18)}
+
+    /* Upload area */
+    .uploader{border:1.8px dashed rgba(255,255,255,.22); border-radius:18px; padding:16px; text-align:center; transition:.2s border-color, .2s transform}
+    .uploader.drag{border-color: var(--brand); transform: scale(1.01)}
+    .uploader input{display:none}
+    .uploader .hint{color:var(--muted); font-size:14px}
+    .preview{margin-top:14px; display:grid; gap:12px}
+    .preview img{max-width:100%; width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.08)}
+
+    /* Editable bio */
+    .editable{outline:none; border:1px dashed transparent; border-radius:12px; padding:10px; transition:.15s border-color}
+    .editable:focus{border-color: var(--ring); background: color-mix(in oklab, var(--panel) 94%, transparent)}
+
+    /* Good things grid */
+    .grid{display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:14px}
+    .col-4{grid-column: span 4}
+    .col-6{grid-column: span 6}
+    .col-12{grid-column: span 12}
+    @media (max-width: 860px){ .col-4, .col-6{grid-column: span 12} }
+
+    .chip{display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:8px 12px; font-weight:600}
+
+    /* Footer */
+    footer{opacity:.8; padding:40px 20px}
+
+    /* Custom cursor dot */
+    .cursor-dot, .cursor-ring{position: fixed; left: 0; top: 0; pointer-events: none; z-index: 1000; transform: translate(-50%,-50%)}
+    .cursor-dot{width:8px; height:8px; border-radius:50%; background: var(--text); mix-blend-mode: difference}
+    .cursor-ring{width:28px; height:28px; border-radius:50%; border:2px solid var(--ring); transition: width .18s ease, height .18s ease, border-color .18s ease, opacity .2s}
+    .cursor-hide{opacity:0}
+
+    /* Fancy focus outline */
+    :focus-visible{outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 8px}
+
+    /* Tiny toast */
+    .toast{position: fixed; bottom:16px; right:16px; background: var(--panel); border:1px solid rgba(255,255,255,.12); padding:10px 14px; border-radius:12px; box-shadow: 0 10px 28px rgba(0,0,0,.22); opacity:0; transform: translateY(8px); transition:.25s}
+    .toast.show{opacity:1; transform: translateY(0)}
+  </style>
+</head>
+<body>
+  <!-- Custom cursor -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+
+  <header>
+    <div class="wrap row">
+      <div class="chip" aria-label="brand">
+        <span>🫧</span>
+        <strong>Anyaka</strong>
+      </div>
+      <div class="spacer"></div>
+      <button id="themeToggle" title="Toggle light/dark (T)">Toggle Theme</button>
+      <button id="saveBtn" title="Save content (Ctrl/⌘+S)">Save</button>
+      <button id="resetBtn" title="Reset content">Reset</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero grid">
+      <div class="col-6">
+        <p class="chip" aria-label="tagline"><span>✨</span>Live‑editable profile</p>
+        <h1 class="title" contenteditable="true" id="title" class="editable">Hi, I'm gay <span style="color:var(--brand)">Anyaka</span> 👋</h1>
+        <p class="subtitle editable" contenteditable="true" id="subtitle">She is an <strong>gay</strong> and a demon, poop soul who builds cool poop and helps people grow poop.</p>
+        <div class="row" style="margin-top:10px; gap:10px">
+          <a class="btn" href="#gallery">Add Photo ↓</a>
+          <a class="btn" href="#badthings">Good Things ↓</a>
+        </div>
+      </div>
+      <div class="col-6">
+        <div id="stats" class="card" aria-live="polite">
+          <div class="row">
+            <div>
+              <div class="subtitle">Impact</div>
+              <div style="font-size:28px; font-weight:800" id="counterA">0</div>
+              <div class="subtitle">people reached</div>
+            </div>
+            <div class="spacer"></div>
+            <div>
+              <div class="subtitle">Projects</div>
+              <div style="font-size:28px; font-weight:800" id="counterB">0</div>
+              <div class="subtitle">launched</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gallery" class="grid">
+      <div class="col-12 card">
+        <h2 style="margin:0 0 10px">Your Image</h2>
+        <div class="uploader" id="uploader" tabindex="0" role="button" aria-label="Upload or drop an image here">
+          <input id="file" type="file" accept="image/*" />
+          <p style="margin:6px 0 10px"><strong>Click to choose</strong> or <strong>drop</strong> an image here.</p>
+          <p class="hint">PNG • JPG • GIF • WebP — your image will preview below 👇</p>
+        </div>
+        <div class="preview" id="preview"></div>
+      </div>
+    </section>
+
+    <section id="goodthings" class="grid" style="margin-top:16px">
+      <div class="col-12 card">
+        <div class="row">
+          <h2 style="margin:0">Good Things About Anyaka</h2>
+          <div class="spacer"></div>
+          <button id="addThing">+ Add</button>
+        </div>
+        <div id="thingsGrid" class="grid" style="margin-top:12px">
+          <!-- Cards will be inserted here -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <div class="subtitle">Tip: Edit any text, upload a photo, then press <strong>Save</strong>. Your content is stored in your browser (localStorage).</div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Saved ✅</div>
+
+  <script>
+    // ===== Custom Cursor Dot =====
+    const dot = document.querySelector('.cursor-dot');
+    const ring = document.querySelector('.cursor-ring');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    const lerp = (a,b,t)=>a+(b-a)*t;
+    function loop(){
+      rx = lerp(rx, mx, .22); ry = lerp(ry, my, .22);
+      dot.style.transform = `translate(${mx}px, ${my}px)`;
+      ring.style.transform = `translate(${rx}px, ${ry}px)`;
+      requestAnimationFrame(loop);
+    }
+    window.addEventListener('mousemove', e=>{ mx = e.clientX; my = e.clientY; dot.classList.remove('cursor-hide'); ring.classList.remove('cursor-hide');});
+    window.addEventListener('mouseleave', ()=>{ dot.classList.add('cursor-hide'); ring.classList.add('cursor-hide'); });
+    // Grow ring on interactive elements
+    const grow = ()=>{ ring.style.width = '44px'; ring.style.height = '44px'; }
+    const shrink = ()=>{ ring.style.width = '28px'; ring.style.height = '28px'; }
+    ['a','button','[role="button"]','input','textarea','select','[contenteditable="true"]'].forEach(sel=>{
+      document.addEventListener('mouseover', e=>{ if(e.target.closest(sel)) grow(); });
+      document.addEventListener('mouseout', e=>{ if(e.target.closest(sel)) shrink(); });
+    });
+    loop();
+
+    // ===== Theme Toggle & Persistence =====
+    const root = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    function setTheme(t){ root.setAttribute('data-theme', t); localStorage.setItem('anyaka-theme', t); }
+    themeToggle.addEventListener('click', ()=>{ setTheme(root.getAttribute('data-theme')==='light'?'dark':'light'); });
+    document.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='t') themeToggle.click(); });
+    (function initTheme(){ const t = localStorage.getItem('anyaka-theme') || 'dark'; setTheme(t); })();
+
+    // ===== Counters (cute animation) =====
+    function animateNumber(el, to, ms=1100){
+      const start = performance.now(); const from = 0;
+      function tick(t){
+        const p = Math.min(1, (t-start)/ms); const v = Math.floor(from + (to-from)*p*p*(3-2*p));
+        el.textContent = v.toLocaleString(); if(p<1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+    animateNumber(document.getElementById('counterA'), 12400);
+    animateNumber(document.getElementById('counterB'), 27);
+
+    // ===== Image Uploader with Drag & Drop =====
+    const up = document.getElementById('uploader');
+    const fileInput = document.getElementById('file');
+    const preview = document.getElementById('preview');
+    up.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', handleFiles);
+
+    ;['dragenter','dragover'].forEach(ev=> up.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); up.classList.add('drag'); }));
+    ;['dragleave','drop'].forEach(ev=> up.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); up.classList.remove('drag'); }));
+    up.addEventListener('drop', e=>{ handleFiles({ target: { files: e.dataTransfer.files }}); });
+
+    function handleFiles(e){
+      const files = [...e.target.files].filter(f=>/image\//.test(f.type));
+      if(!files.length) return;
+      preview.innerHTML = '';
+      files.forEach(f=>{
+        const reader = new FileReader();
+        reader.onload = ev=>{
+          const img = new Image(); img.src = ev.target.result; img.alt = f.name;
+          preview.appendChild(img);
+          persist();
+        };
+        reader.readAsDataURL(f);
+      });
+    }
+
+    // ===== Good Things dynamic cards =====
+    const addBtn = document.getElementById('addThing');
+    const grid = document.getElementById('thingsGrid');
+
+    function cardTemplate(text='Creative problem‑solver ✨'){
+      const wrap = document.createElement('div');
+      wrap.className = 'col-4';
+      wrap.innerHTML = `
+        <article class="card" draggable="true">
+          <div class="row" style="gap:8px">
+            <span aria-hidden>🌟</span>
+            <div class="editable" contenteditable="true">${text}</div>
+            <div class="spacer"></div>
+            <button class="remove" title="Remove">✕</button>
+          </div>
+        </article>`;
+      // interactions
+      wrap.querySelector('.remove').addEventListener('click', ()=>{ wrap.remove(); persist(); showToast('Removed');});
+      wrap.querySelector('[contenteditable]').addEventListener('input', ()=>persist());
+      // drag sort
+      const art = wrap.querySelector('article');
+      art.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain',''); art.classList.add('dragging'); });
+      art.addEventListener('dragend', ()=> art.classList.remove('dragging'));
+      grid.addEventListener('dragover', e=>{
+        e.preventDefault();
+        const y = e.clientY;
+        const items = [...grid.querySelectorAll('article:not(.dragging)')];
+        const next = items.find(it=> it.getBoundingClientRect().top + it.offsetHeight/2 > y);
+        grid.insertBefore(wrap, next? next.parentElement: null);
+      });
+      return wrap;
+    }
+
+    addBtn.addEventListener('click', ()=>{ grid.appendChild(cardTemplate('Add your note…')); persist(); });
+
+    // Seed default cards
+    const defaults = ['Entrepreneur with poop','Always learning to eat bad things','Leads by example','Uplifts her poop team','Builds products that matter',''];
+
+    // ===== Persistence =====
+    const title = document.getElementById('title');
+    const subtitle = document.getElementById('subtitle');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const toast = document.getElementById('toast');
+
+    function serialize(){
+      return JSON.stringify({
+        theme: document.documentElement.getAttribute('data-theme'),
+        title: title.innerHTML,
+        subtitle: subtitle.innerHTML,
+        preview: [...preview.querySelectorAll('img')].map(img=> img.src),
+        things: [...grid.querySelectorAll('.editable')].map(d=> d.innerHTML)
+      });
+    }
+    function persist(){ localStorage.setItem('anyaka-data', serialize()); }
+
+    function hydrate(){
+      const raw = localStorage.getItem('anyaka-data');
+      if(!raw){
+        // seed defaults
+        defaults.forEach(t=> grid.appendChild(cardTemplate(t)));
+        return;
+      }
+      try{
+        const data = JSON.parse(raw);
+        if(data.theme) setTheme(data.theme);
+        if(data.title) title.innerHTML = data.title;
+        if(data.subtitle) subtitle.innerHTML = data.subtitle;
+        if(Array.isArray(data.preview)){
+          preview.innerHTML = '';
+          data.preview.forEach(src=>{ const img = new Image(); img.src = src; preview.appendChild(img); });
+        }
+        if(Array.isArray(data.things) && data.things.length){
+          grid.innerHTML = '';
+          data.things.forEach(t=> grid.appendChild(cardTemplate(t)));
+        } else {
+          defaults.forEach(t=> grid.appendChild(cardTemplate(t)));
+        }
+      }catch(e){ console.warn('Could not parse saved data', e); }
+    }
+
+    function showToast(msg='Saved ✅'){
+      toast.textContent = msg; toast.classList.add('show');
+      setTimeout(()=> toast.classList.remove('show'), 1500);
+    }
+
+    saveBtn.addEventListener('click', ()=>{ persist(); showToast(); });
+    resetBtn.addEventListener('click', ()=>{ localStorage.removeItem('anyaka-data'); hydrate(); showToast('Reset ✅'); });
+
+    document.addEventListener('keydown', e=>{
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s') { e.preventDefault(); persist(); showToast(); }
+    });
+
+    // Save edits live
+    ;['input','blur','keyup','paste'].forEach(ev=>{
+      title.addEventListener(ev, persist);
+      subtitle.addEventListener(ev, persist);
+    });
+
+    hydrate();
+  </script>
+</body>
+</html>
