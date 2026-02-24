@@ -1,343 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Anyaka • Interactive Profile</title>
-  <meta name="description" content="Anyaka bull  —." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>✨</text></svg>">
-  <style>
-    :root{
-      --bg: #0f1220;
-      --panel: #171a2b;
-      --text: #e7e9ff;
-      --muted: #9aa1c6;
-      --brand: #8b8dff;
-      --accent: #24d3ee;
-      --ring: rgba(139,141,255,.35);
-    }
-    [data-theme="light"]{
-      --bg: #f7f8ff;
-      --panel: #ffffff;
-      --text: #0f1220;
-      --muted: #5b6287;
-      --brand: #585bff;
-      --accent: #06b6d4;
-      --ring: rgba(88,91,255,.25);
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DevCave Marketplace Ad Formatter</title>
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background: radial-gradient(1200px 600px at 80% -10%, rgba(139,141,255,.20), transparent 60%),
-      radial-gradient(1000px 500px at 10% 10%, rgba(36,211,238,.18), transparent 60%), var(--bg);
-      color:var(--text); font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-      cursor: none; /* we will draw our own dot cursor */
-    }
-    a{color:var(--brand); text-decoration:none}
-    a:hover{text-decoration:underline}
+<style>
+  :root{
+    --bg1: #0f1113;
+    --bg2: #161718;
+    --panel: #1f1f21;
+    --muted: #9aa3ad;
+    --accent1: #00c6ff;
+    --accent2: #0072ff;
+    --successA: #00c853;
+    --successB: #00e676;
+    --copyA: #0072ff;
+    --copyB: #00c6ff;
+  }
 
-    /* Layout */
-    header{position:sticky; top:0; z-index:50; backdrop-filter: blur(10px); background: color-mix(in oklab, var(--bg) 70%, transparent); border-bottom:1px solid rgba(255,255,255,.06)}
-    .wrap{max-width:1100px; margin-inline:auto; padding:18px 20px}
-    .row{display:flex; align-items:center; gap:14px}
-    .spacer{flex:1}
-    button, .btn{appearance:none; border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 92%, transparent), color-mix(in oklab, var(--panel) 100%, transparent)); color:var(--text); padding:10px 14px; border-radius:14px; font-weight:600; letter-spacing:.2px; box-shadow: 0 6px 20px rgba(0,0,0,.12); transition:.2s transform, .2s box-shadow, .2s border-color}
-    button:hover, .btn:hover{transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0,0,0,.18); border-color: var(--ring)}
+  html,body{height:100%;margin:0;background:linear-gradient(135deg,var(--bg1),var(--bg2));font-family: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;color:#fff;overflow-y:auto;}
 
-    .hero{padding:48px 20px 24px}
-    .title{font-size: clamp(28px, 4vw, 48px); line-height:1.1; margin:8px 0}
-    .subtitle{font-size: clamp(14px, 1.8vw, 18px); color:var(--muted)}
+  /* full-screen particle canvas behind content */
+  #particle-canvas{
+    position:fixed;
+    inset:0;
+    z-index:0; /* behind everything */
+    pointer-events:none; /* don't block clicks */
+    display:block;
+  }
 
-    .card{background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 96%, transparent), color-mix(in oklab, var(--panel) 100%, transparent)); border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; box-shadow: 0 12px 30px rgba(0,0,0,.18)}
+  .wrap{
+    position:relative;
+    z-index:5; /* above particles */
+    max-width:980px;
+    margin:36px auto;
+    padding:28px;
+    border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+    box-shadow:0 18px 50px rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+    min-height: 80vh;
+  }
 
-    /* Upload area */
-    .uploader{border:1.8px dashed rgba(255,255,255,.22); border-radius:18px; padding:16px; text-align:center; transition:.2s border-color, .2s transform}
-    .uploader.drag{border-color: var(--brand); transform: scale(1.01)}
-    .uploader input{display:none}
-    .uploader .hint{color:var(--muted); font-size:14px}
-    .preview{margin-top:14px; display:grid; gap:12px}
-    .preview img{max-width:100%; width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.08)}
+  /* BRANDING */
+  .branding{
+    display:flex;
+    gap:18px;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:20px;
+  }
+  .logo-wrap{
+    width:112px;
+    height:112px;
+    border-radius:16px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transform-origin:center;
+    animation: logoFloat 4s ease-in-out infinite;
+  }
+  .logo-wrap img{
+    width:94%;
+    height:94%;
+    object-fit:cover;
+    border-radius:12px;
+    display:block;
+    position:relative;
+    z-index:3;
+    background: #0b0b0b;
+  }
 
-    /* Editable bio */
-    .editable{outline:none; border:1px dashed transparent; border-radius:12px; padding:10px; transition:.15s border-color}
-    .editable:focus{border-color: var(--ring); background: color-mix(in oklab, var(--panel) 94%, transparent)}
+  /* neon animated square border around logo (larger, blurred) */
+  .logo-wrap::before{
+    content:"";
+    position:absolute;
+    inset:-8px;
+    border-radius:18px;
+    background: linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent1));
+    background-size:240% 240%;
+    filter: blur(18px) saturate(120%);
+    z-index:1;
+    opacity:0.95;
+    animation: logoGlow 6s linear infinite;
+  }
 
-    /* Good things grid */
-    .grid{display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:14px}
-    .col-4{grid-column: span 4}
-    .col-6{grid-column: span 6}
-    .col-12{grid-column: span 12}
-    @media (max-width: 860px){ .col-4, .col-6{grid-column: span 12} }
+  @keyframes logoGlow{
+    0%{ background-position:0% 50%; transform: rotate(0deg) scale(1); }
+    50%{ background-position:100% 50%; transform: rotate(1deg) scale(1.02); }
+    100%{ background-position:0% 50%; transform: rotate(0deg) scale(1); }
+  }
 
-    .chip{display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:8px 12px; font-weight:600}
+  @keyframes logoFloat {
+    0%{ transform: translateY(0px); }
+    50%{ transform: translateY(-9px); }
+    100%{ transform: translateY(0px); }
+  }
 
-    /* Footer */
-    footer{opacity:.8; padding:40px 20px}
+  .branding h1{
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+    background:linear-gradient(90deg,var(--accent1),var(--accent2));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .branding .sub{font-size:13px;color:var(--muted);margin-top:6px;text-align:center;}
 
-    /* Custom cursor dot */
-    .cursor-dot, .cursor-ring{position: fixed; left: 0; top: 0; pointer-events: none; z-index: 1000; transform: translate(-50%,-50%)}
-    .cursor-dot{width:8px; height:8px; border-radius:50%; background: var(--text); mix-blend-mode: difference}
-    .cursor-ring{width:28px; height:28px; border-radius:50%; border:2px solid var(--ring); transition: width .18s ease, height .18s ease, border-color .18s ease, opacity .2s}
-    .cursor-hide{opacity:0}
+  /* responsive form layout */
+  .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:18px; }
+  label{ display:block; margin-top:12px; font-weight:700; color:#e7eef8; font-size:13px; }
+  input[type="text"], select, textarea{
+    width:100%; padding:12px; border-radius:10px; border:none; background:#222; color:#fff; font-size:14px; outline:none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  }
+  textarea{ min-height:140px; resize:vertical; }
+  .full{ grid-column:1 / -1; }
 
-    /* Fancy focus outline */
-    :focus-visible{outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 8px}
+  .controls{ display:flex; gap:12px; margin-top:18px; align-items:center; }
+  .btn{ cursor:pointer; border:none; padding:12px 14px; border-radius:10px; font-weight:800; font-size:14px; display:inline-flex; align-items:center; gap:10px; }
+  .btn.generate{ flex:1; background:linear-gradient(90deg,var(--successA),var(--successB)); color:#072410; box-shadow:0 8px 20px rgba(0,200,110,0.12); }
+  .btn.copy{ background:linear-gradient(90deg,var(--copyA),var(--copyB)); color:white; }
+  .btn:active{ transform: translateY(1px); }
 
-    /* Tiny toast */
-    .toast{position: fixed; bottom:16px; right:16px; background: var(--panel); border:1px solid rgba(255,255,255,.12); padding:10px 14px; border-radius:12px; box-shadow: 0 10px 28px rgba(0,0,0,.22); opacity:0; transform: translateY(8px); transition:.25s}
-    .toast.show{opacity:1; transform: translateY(0)}
-  </style>
+  .error{ color:#ff6b6b; font-weight:700; margin-top:10px; min-height:22px; }
+
+  .output{ width:100%; margin-top:14px; min-height:220px; padding:12px; border-radius:10px; border:none; background:#0e0e10; color:#ddd; resize:none; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:13px; white-space:pre-wrap; }
+
+  /* footer credit */
+  .footer-credit{ margin-top:28px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.03); text-align:center; color:var(--muted); }
+  .credit-line{ margin-bottom:6px; display:flex; gap:8px; align-items:center; justify-content:center; }
+  .animated-name{ font-weight:900; font-size:16px; background: linear-gradient(90deg,#6ecbff,#3a8eff,#ffd54f,#ff9800); background-size:300% 300%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation: nameShift 4s linear infinite, nameFloat 3.2s ease-in-out infinite; text-shadow: 0 6px 24px rgba(0,118,255,0.06); }
+  @keyframes nameShift{ 0%{ background-position:0% 50% } 50%{ background-position:100% 50% } 100%{ background-position:0% 50% } }
+  @keyframes nameFloat{ 0%{ transform: translateY(0px) } 50%{ transform: translateY(-8px) } 100%{ transform: translateY(0px) } }
+
+  .version{ font-size:13px; color:#a6b0b8; margin-bottom:6px; }
+  .copyright{ font-size:12px; color:#777; }
+
+  @media (max-width:760px){
+    .grid{ grid-template-columns:1fr; }
+    .branding{ flex-direction:column; gap:8px; }
+  }
+</style>
 </head>
 <body>
-  <!-- Custom cursor -->
-  <div class="cursor-dot"></div>
-  <div class="cursor-ring"></div>
 
-  <header>
-    <div class="wrap row">
-      <div class="chip" aria-label="brand">
-        <span>🫧</span>
-        <strong>Anyaka</strong>
-      </div>
-      <div class="spacer"></div>
-      <button id="themeToggle" title="Toggle light/dark (T)">Toggle Theme</button>
-      <button id="saveBtn" title="Save content (Ctrl/⌘+S)">Save</button>
-      <button id="resetBtn" title="Reset content">Reset</button>
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+<div class="wrap" role="main">
+  <div class="branding" role="banner">
+    <div class="logo-wrap" title="DevCove Logo (animated GIF)">
+      <!-- Replace logo.gif with your animated gif file -->
+      <img src="logo.gif" alt="DevCove Logo">
     </div>
-  </header>
 
-  <main class="wrap">
-    <section class="hero grid">
-      <div class="col-6">
-        <p class="chip" aria-label="tagline"><span>✨</span>Live‑editable profile</p>
-        <h1 class="title" contenteditable="true" id="title" class="editable">Hi, I'm gay <span style="color:var(--brand)">Anyaka</span> 👋</h1>
-        <p class="subtitle editable" contenteditable="true" id="subtitle">She is an <strong>gay</strong> and a demon, poop soul who builds cool poop and helps people grow poop.</p>
-        <div class="row" style="margin-top:10px; gap:10px">
-          <a class="btn" href="#gallery">Add Photo ↓</a>
-          <a class="btn" href="#badthings">Good Things ↓</a>
-        </div>
-      </div>
-      <div class="col-6">
-        <div id="stats" class="card" aria-live="polite">
-          <div class="row">
-            <div>
-              <div class="subtitle">Impact</div>
-              <div style="font-size:28px; font-weight:800" id="counterA">0</div>
-              <div class="subtitle">people reached</div>
-            </div>
-            <div class="spacer"></div>
-            <div>
-              <div class="subtitle">Projects</div>
-              <div style="font-size:28px; font-weight:800" id="counterB">0</div>
-              <div class="subtitle">launched</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <div>
+      <h1>DevCove Marketplace</h1>
+      <div class="sub">AD FORMATTER V2</div>
+    </div>
+  </div>
 
-    <section id="gallery" class="grid">
-      <div class="col-12 card">
-        <h2 style="margin:0 0 10px">Your Image</h2>
-        <div class="uploader" id="uploader" tabindex="0" role="button" aria-label="Upload or drop an image here">
-          <input id="file" type="file" accept="image/*" />
-          <p style="margin:6px 0 10px"><strong>Click to choose</strong> or <strong>drop</strong> an image here.</p>
-          <p class="hint">PNG • JPG • GIF • WebP — your image will preview below 👇</p>
-        </div>
-        <div class="preview" id="preview"></div>
-      </div>
-    </section>
+  <div class="grid">
+    <div>
+      <label for="adType">Ad Type</label>
+      <select id="adType" aria-label="Ad Type">
+        <option value="Hiring">Hiring</option>
+        <option value="For Hire">For Hire</option>
+        <option value="Selling">Selling</option>
+      </select>
+    </div>
 
-    <section id="goodthings" class="grid" style="margin-top:16px">
-      <div class="col-12 card">
-        <div class="row">
-          <h2 style="margin:0">Good Things About Anyaka</h2>
-          <div class="spacer"></div>
-          <button id="addThing">+ Add</button>
-        </div>
-        <div id="thingsGrid" class="grid" style="margin-top:12px">
-          <!-- Cards will be inserted here -->
-        </div>
-      </div>
-    </section>
-  </main>
+    <div>
+      <label for="ownerName">Post Owner Username (Required)</label>
+      <input id="ownerName" type="text" placeholder="@Username">
+    </div>
 
-  <footer class="wrap">
-    <div class="subtitle">Tip: Edit any text, upload a photo, then press <strong>Save</strong>. Your content is stored in your browser (localStorage).</div>
-  </footer>
+    <div>
+      <label for="ownerId">Post Owner ID (Required)</label>
+      <input id="ownerId" type="text" inputmode="numeric" placeholder="123456789012345678">
+    </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite">Saved ✅</div>
+    <div class="full">
+      <label for="adContent">Ad Content</label>
+      <textarea id="adContent" placeholder="Write your ad here..."></textarea>
+    </div>
+  </div>
 
-  <script>
-    // ===== Custom Cursor Dot =====
-    const dot = document.querySelector('.cursor-dot');
-    const ring = document.querySelector('.cursor-ring');
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    const lerp = (a,b,t)=>a+(b-a)*t;
-    function loop(){
-      rx = lerp(rx, mx, .22); ry = lerp(ry, my, .22);
-      dot.style.transform = `translate(${mx}px, ${my}px)`;
-      ring.style.transform = `translate(${rx}px, ${ry}px)`;
-      requestAnimationFrame(loop);
-    }
-    window.addEventListener('mousemove', e=>{ mx = e.clientX; my = e.clientY; dot.classList.remove('cursor-hide'); ring.classList.remove('cursor-hide');});
-    window.addEventListener('mouseleave', ()=>{ dot.classList.add('cursor-hide'); ring.classList.add('cursor-hide'); });
-    // Grow ring on interactive elements
-    const grow = ()=>{ ring.style.width = '44px'; ring.style.height = '44px'; }
-    const shrink = ()=>{ ring.style.width = '28px'; ring.style.height = '28px'; }
-    ['a','button','[role="button"]','input','textarea','select','[contenteditable="true"]'].forEach(sel=>{
-      document.addEventListener('mouseover', e=>{ if(e.target.closest(sel)) grow(); });
-      document.addEventListener('mouseout', e=>{ if(e.target.closest(sel)) shrink(); });
-    });
-    loop();
+  <div class="controls" role="toolbar">
+    <button class="btn generate" id="generateBtn">Generate Formatted Ad</button>
+    <button class="btn copy" id="copyBtn">💎 Copy To Clipboard</button>
+  </div>
 
-    // ===== Theme Toggle & Persistence =====
-    const root = document.documentElement;
-    const themeToggle = document.getElementById('themeToggle');
-    function setTheme(t){ root.setAttribute('data-theme', t); localStorage.setItem('anyaka-theme', t); }
-    themeToggle.addEventListener('click', ()=>{ setTheme(root.getAttribute('data-theme')==='light'?'dark':'light'); });
-    document.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='t') themeToggle.click(); });
-    (function initTheme(){ const t = localStorage.getItem('anyaka-theme') || 'dark'; setTheme(t); })();
+  <div class="error" id="errorBox" role="status" aria-live="polite"></div>
 
-    // ===== Counters (cute animation) =====
-    function animateNumber(el, to, ms=1100){
-      const start = performance.now(); const from = 0;
-      function tick(t){
-        const p = Math.min(1, (t-start)/ms); const v = Math.floor(from + (to-from)*p*p*(3-2*p));
-        el.textContent = v.toLocaleString(); if(p<1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-    }
-    animateNumber(document.getElementById('counterA'), 12400);
-    animateNumber(document.getElementById('counterB'), 27);
+  <label style="margin-top:14px;display:block;font-weight:700;color:#e7eef8;margin-bottom:6px">Formatted Discord Ad</label>
+  <textarea id="output" class="output" readonly aria-label="Formatted Ad Output"></textarea>
 
-    // ===== Image Uploader with Drag & Drop =====
-    const up = document.getElementById('uploader');
-    const fileInput = document.getElementById('file');
-    const preview = document.getElementById('preview');
-    up.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', handleFiles);
+  <div class="footer-credit" role="contentinfo">
+    <div class="credit-line">
+      Made by <span class="animated-name">@___devdark__</span> for <strong style="color:var(--accent1);">DevCove</strong>
+    </div>
+    <div class="version">Version 2.1.0</div>
+    <div class="copyright">© 2025 DevCove. All rights reserved.</div>
+  </div>
+</div>
 
-    ;['dragenter','dragover'].forEach(ev=> up.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); up.classList.add('drag'); }));
-    ;['dragleave','drop'].forEach(ev=> up.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); up.classList.remove('drag'); }));
-    up.addEventListener('drop', e=>{ handleFiles({ target: { files: e.dataTransfer.files }}); });
+<script>
+/* ---------------------------
+   Particle background (Canvas)
+   --------------------------- */
+(function(){
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
+  let particles = [];
+  let particleCount = Math.floor(Math.min(100, Math.max(30, (W*H)/90000))); // scale count by screen size
+  // colors pulled from accent gradient
+  const colors = [
+    {r: 0, g:198, b:255, a:0.10},
+    {r: 0, g:114, b:255, a:0.08},
+    {r: 255, g:213, b:79, a:0.06}
+  ];
 
-    function handleFiles(e){
-      const files = [...e.target.files].filter(f=>/image\//.test(f.type));
-      if(!files.length) return;
-      preview.innerHTML = '';
-      files.forEach(f=>{
-        const reader = new FileReader();
-        reader.onload = ev=>{
-          const img = new Image(); img.src = ev.target.result; img.alt = f.name;
-          preview.appendChild(img);
-          persist();
-        };
-        reader.readAsDataURL(f);
-      });
-    }
+  function rand(min,max){ return Math.random()*(max-min)+min; }
 
-    // ===== Good Things dynamic cards =====
-    const addBtn = document.getElementById('addThing');
-    const grid = document.getElementById('thingsGrid');
+  function createParticle(i){
+    const size = rand(0.9, 3.2);
+    const p = {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: rand(-0.25, 0.25),
+      vy: rand(-0.3, -0.05), // slight upward drift
+      size: size,
+      baseSize: size,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      life: rand(80, 220) + Math.random()*200,
+      phase: Math.random()*Math.PI*2
+    };
+    particles[i] = p;
+  }
 
-    function cardTemplate(text='Creative problem‑solver ✨'){
-      const wrap = document.createElement('div');
-      wrap.className = 'col-4';
-      wrap.innerHTML = `
-        <article class="card" draggable="true">
-          <div class="row" style="gap:8px">
-            <span aria-hidden>🌟</span>
-            <div class="editable" contenteditable="true">${text}</div>
-            <div class="spacer"></div>
-            <button class="remove" title="Remove">✕</button>
-          </div>
-        </article>`;
-      // interactions
-      wrap.querySelector('.remove').addEventListener('click', ()=>{ wrap.remove(); persist(); showToast('Removed');});
-      wrap.querySelector('[contenteditable]').addEventListener('input', ()=>persist());
-      // drag sort
-      const art = wrap.querySelector('article');
-      art.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain',''); art.classList.add('dragging'); });
-      art.addEventListener('dragend', ()=> art.classList.remove('dragging'));
-      grid.addEventListener('dragover', e=>{
-        e.preventDefault();
-        const y = e.clientY;
-        const items = [...grid.querySelectorAll('article:not(.dragging)')];
-        const next = items.find(it=> it.getBoundingClientRect().top + it.offsetHeight/2 > y);
-        grid.insertBefore(wrap, next? next.parentElement: null);
-      });
-      return wrap;
+  function init(){
+    particles = [];
+    for(let i=0;i<particleCount;i++) createParticle(i);
+  }
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    // recalc count lightly on resize
+    particleCount = Math.floor(Math.min(120, Math.max(20, (W*H)/90000)));
+    init();
+  }
+
+  window.addEventListener('resize', resize);
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    for(let i=0;i<particles.length;i++){
+      const p = particles[i];
+      // gentle sinusoidal size change for twinkle
+      p.phase += 0.01 + Math.random()*0.01;
+      const twinkle = 0.9 + 0.2 * Math.sin(p.phase*1.5);
+      const r = p.size * twinkle;
+
+      // draw radial glow
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, Math.max(r*3, 8));
+      const c = p.color;
+      grad.addColorStop(0, `rgba(${c.r},${c.g},${c.b},${c.a})`);
+      grad.addColorStop(0.6, `rgba(${c.r},${c.g},${c.b},${c.a*0.25})`);
+      grad.addColorStop(1, `rgba(${c.r},${c.g},${c.b},0)`);
+      ctx.beginPath();
+      ctx.fillStyle = grad;
+      ctx.arc(p.x, p.y, Math.max(r*2, 4), 0, Math.PI*2);
+      ctx.fill();
+
+      // move
+      p.x += p.vx + Math.sin(p.phase)*0.05;
+      p.y += p.vy;
+
+      // gentle horizontal wrap and vertical wrap from bottom to top
+      if(p.x < -20) p.x = W + 20;
+      if(p.x > W + 20) p.x = -20;
+      if(p.y < -30) p.y = H + 20;
+      if(p.y > H + 40) p.y = -40;
     }
 
-    addBtn.addEventListener('click', ()=>{ grid.appendChild(cardTemplate('Add your note…')); persist(); });
+    requestAnimationFrame(draw);
+  }
 
-    // Seed default cards
-    const defaults = ['Entrepreneur with poop','Always learning to eat bad things','Leads by example','Uplifts her poop team','Builds products that matter',''];
+  // pause animation when tab not visible to save CPU
+  let running = true;
+  document.addEventListener('visibilitychange', function(){
+    running = !document.hidden;
+    if(running) requestAnimationFrame(draw);
+  });
 
-    // ===== Persistence =====
-    const title = document.getElementById('title');
-    const subtitle = document.getElementById('subtitle');
-    const saveBtn = document.getElementById('saveBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const toast = document.getElementById('toast');
+  init();
+  requestAnimationFrame(draw);
+})();
 
-    function serialize(){
-      return JSON.stringify({
-        theme: document.documentElement.getAttribute('data-theme'),
-        title: title.innerHTML,
-        subtitle: subtitle.innerHTML,
-        preview: [...preview.querySelectorAll('img')].map(img=> img.src),
-        things: [...grid.querySelectorAll('.editable')].map(d=> d.innerHTML)
-      });
+/* ---------------------------
+   Main UI logic (generate/copy)
+   --------------------------- */
+(function(){
+  const adTypeEl = document.getElementById("adType");
+  const ownerNameEl = document.getElementById("ownerName");
+  const ownerIdEl = document.getElementById("ownerId");
+  const adContentEl = document.getElementById("adContent");
+  const errorBox = document.getElementById("errorBox");
+  const outputEl = document.getElementById("output");
+  const generateBtn = document.getElementById("generateBtn");
+  const copyBtn = document.getElementById("copyBtn");
+
+  function getPing(type){
+    if(type === "Hiring") return "@For-hire ping";
+    if(type === "For Hire") return "@Hiring ping";
+    if(type === "Selling") return "@Selling ping";
+    return "";
+  }
+
+  function validate(ownerName, ownerId, content){
+    if(!ownerName || !ownerId){
+      return "Post Owner Username and Owner ID are MANDATORY.";
     }
-    function persist(){ localStorage.setItem('anyaka-data', serialize()); }
+    if(!/^\d+$/.test(ownerId)){
+      return "Owner ID must contain numbers only.";
+    }
+    if(!content){
+      return "Ad Content cannot be empty.";
+    }
+    return "";
+  }
 
-    function hydrate(){
-      const raw = localStorage.getItem('anyaka-data');
-      if(!raw){
-        // seed defaults
-        defaults.forEach(t=> grid.appendChild(cardTemplate(t)));
-        return;
-      }
+  function buildFormatted(ownerName, ownerId, content, type){
+    const ping = getPing(type);
+    return `**⚠️ PLEASE MESSAGE THE POST OWNER, STAFF WILL NOT RESPOND ⚠️**
+
+${content}
+
+**AD OWNER:** ${ownerName} (<@${ownerId}>)
+
+**⚠️ PLEASE MESSAGE THE POST OWNER, STAFF WILL NOT RESPOND ⚠️**
+**---------------------------------------------------------- **
+
+${ping}`;
+  }
+
+  generateBtn.addEventListener("click", function(){
+    errorBox.textContent = "";
+    const ownerName = ownerNameEl.value.trim();
+    const ownerId = ownerIdEl.value.trim();
+    const content = adContentEl.value.trim();
+    const type = adTypeEl.value;
+
+    const err = validate(ownerName, ownerId, content);
+    if(err){
+      errorBox.textContent = err;
+      outputEl.value = "";
+      return;
+    }
+
+    outputEl.value = buildFormatted(ownerName, ownerId, content, type);
+    outputEl.focus();
+    outputEl.select();
+  });
+
+  copyBtn.addEventListener("click", async function(){
+    const text = outputEl.value.trim();
+    if(!text){
+      errorBox.textContent = "Generate the ad first before copying.";
+      return;
+    }
+    try{
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = "✅ Copied";
+      setTimeout(()=> { copyBtn.innerHTML = "💎 Copy To Clipboard"; }, 1400);
+    }catch(e){
+      // fallback
+      outputEl.select();
       try{
-        const data = JSON.parse(raw);
-        if(data.theme) setTheme(data.theme);
-        if(data.title) title.innerHTML = data.title;
-        if(data.subtitle) subtitle.innerHTML = data.subtitle;
-        if(Array.isArray(data.preview)){
-          preview.innerHTML = '';
-          data.preview.forEach(src=>{ const img = new Image(); img.src = src; preview.appendChild(img); });
-        }
-        if(Array.isArray(data.things) && data.things.length){
-          grid.innerHTML = '';
-          data.things.forEach(t=> grid.appendChild(cardTemplate(t)));
-        } else {
-          defaults.forEach(t=> grid.appendChild(cardTemplate(t)));
-        }
-      }catch(e){ console.warn('Could not parse saved data', e); }
+        document.execCommand('copy');
+        copyBtn.textContent = "✅ Copied";
+        setTimeout(()=> { copyBtn.innerHTML = "💎 Copy To Clipboard"; }, 1400);
+      }catch(err){
+        alert("Could not copy automatically. Please select and copy manually.");
+      }
     }
+  });
 
-    function showToast(msg='Saved ✅'){
-      toast.textContent = msg; toast.classList.add('show');
-      setTimeout(()=> toast.classList.remove('show'), 1500);
-    }
-
-    saveBtn.addEventListener('click', ()=>{ persist(); showToast(); });
-    resetBtn.addEventListener('click', ()=>{ localStorage.removeItem('anyaka-data'); hydrate(); showToast('Reset ✅'); });
-
-    document.addEventListener('keydown', e=>{
-      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s') { e.preventDefault(); persist(); showToast(); }
-    });
-
-    // Save edits live
-    ;['input','blur','keyup','paste'].forEach(ev=>{
-      title.addEventListener(ev, persist);
-      subtitle.addEventListener(ev, persist);
-    });
-
-    hydrate();
-  </script>
+})();
+</script>
 </body>
+
 </html>
