@@ -1,401 +1,3430 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DevCave Marketplace Ad Formatter</title>
 
-<style>
-  :root{
-    --bg1: #0f1113;
-    --bg2: #161718;
-    --panel: #1f1f21;
-    --muted: #9aa3ad;
-    --accent1: #00c6ff;
-    --accent2: #0072ff;
-    --successA: #00c853;
-    --successB: #00e676;
-    --copyA: #0072ff;
-    --copyB: #00c6ff;
-  }
+    <meta charset="UTF-8">
 
-  html,body{height:100%;margin:0;background:linear-gradient(135deg,var(--bg1),var(--bg2));font-family: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;color:#fff;overflow-y:auto;}
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-  /* full-screen particle canvas behind content */
-  #particle-canvas{
-    position:fixed;
-    inset:0;
-    z-index:0; /* behind everything */
-    pointer-events:none; /* don't block clicks */
-    display:block;
-  }
+    <meta name="theme-color" content="#03140a">
 
-  .wrap{
-    position:relative;
-    z-index:5; /* above particles */
-    max-width:980px;
-    margin:36px auto;
-    padding:28px;
-    border-radius:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
-    box-shadow:0 18px 50px rgba(0,0,0,0.7);
-    border: 1px solid rgba(255,255,255,0.03);
-    backdrop-filter: blur(6px);
-    min-height: 80vh;
-  }
+    <title>Parth 3D Cricket World</title>
 
-  /* BRANDING */
-  .branding{
-    display:flex;
-    gap:18px;
-    align-items:center;
-    justify-content:center;
-    margin-bottom:20px;
-  }
-  .logo-wrap{
-    width:112px;
-    height:112px;
-    border-radius:16px;
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transform-origin:center;
-    animation: logoFloat 4s ease-in-out infinite;
-  }
-  .logo-wrap img{
-    width:94%;
-    height:94%;
-    object-fit:cover;
-    border-radius:12px;
-    display:block;
-    position:relative;
-    z-index:3;
-    background: #0b0b0b;
-  }
+    <!-- =========================================================
+         THREE.JS
+         Current release: r186
+    ========================================================== -->
 
-  /* neon animated square border around logo (larger, blurred) */
-  .logo-wrap::before{
-    content:"";
-    position:absolute;
-    inset:-8px;
-    border-radius:18px;
-    background: linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent1));
-    background-size:240% 240%;
-    filter: blur(18px) saturate(120%);
-    z-index:1;
-    opacity:0.95;
-    animation: logoGlow 6s linear infinite;
-  }
+    <script type="importmap">
+    {
+        "imports": {
+            "three":
+            "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
 
-  @keyframes logoGlow{
-    0%{ background-position:0% 50%; transform: rotate(0deg) scale(1); }
-    50%{ background-position:100% 50%; transform: rotate(1deg) scale(1.02); }
-    100%{ background-position:0% 50%; transform: rotate(0deg) scale(1); }
-  }
+            "three/addons/":
+            "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+        }
+    }
+    </script>
 
-  @keyframes logoFloat {
-    0%{ transform: translateY(0px); }
-    50%{ transform: translateY(-9px); }
-    100%{ transform: translateY(0px); }
-  }
 
-  .branding h1{
-    margin:0;
-    font-size:22px;
-    font-weight:700;
-    background:linear-gradient(90deg,var(--accent1),var(--accent2));
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-  }
-  .branding .sub{font-size:13px;color:var(--muted);margin-top:6px;text-align:center;}
+    <style>
 
-  /* responsive form layout */
-  .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:18px; }
-  label{ display:block; margin-top:12px; font-weight:700; color:#e7eef8; font-size:13px; }
-  input[type="text"], select, textarea{
-    width:100%; padding:12px; border-radius:10px; border:none; background:#222; color:#fff; font-size:14px; outline:none;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
-  }
-  textarea{ min-height:140px; resize:vertical; }
-  .full{ grid-column:1 / -1; }
+        /* =====================================================
+           RESET
+        ===================================================== */
 
-  .controls{ display:flex; gap:12px; margin-top:18px; align-items:center; }
-  .btn{ cursor:pointer; border:none; padding:12px 14px; border-radius:10px; font-weight:800; font-size:14px; display:inline-flex; align-items:center; gap:10px; }
-  .btn.generate{ flex:1; background:linear-gradient(90deg,var(--successA),var(--successB)); color:#072410; box-shadow:0 8px 20px rgba(0,200,110,0.12); }
-  .btn.copy{ background:linear-gradient(90deg,var(--copyA),var(--copyB)); color:white; }
-  .btn:active{ transform: translateY(1px); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  .error{ color:#ff6b6b; font-weight:700; margin-top:10px; min-height:22px; }
+        html {
+            scroll-behavior: smooth;
+        }
 
-  .output{ width:100%; margin-top:14px; min-height:220px; padding:12px; border-radius:10px; border:none; background:#0e0e10; color:#ddd; resize:none; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:13px; white-space:pre-wrap; }
+        body {
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
 
-  /* footer credit */
-  .footer-credit{ margin-top:28px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.03); text-align:center; color:var(--muted); }
-  .credit-line{ margin-bottom:6px; display:flex; gap:8px; align-items:center; justify-content:center; }
-  .animated-name{ font-weight:900; font-size:16px; background: linear-gradient(90deg,#6ecbff,#3a8eff,#ffd54f,#ff9800); background-size:300% 300%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation: nameShift 4s linear infinite, nameFloat 3.2s ease-in-out infinite; text-shadow: 0 6px 24px rgba(0,118,255,0.06); }
-  @keyframes nameShift{ 0%{ background-position:0% 50% } 50%{ background-position:100% 50% } 100%{ background-position:0% 50% } }
-  @keyframes nameFloat{ 0%{ transform: translateY(0px) } 50%{ transform: translateY(-8px) } 100%{ transform: translateY(0px) } }
+            background:
+                #020617;
 
-  .version{ font-size:13px; color:#a6b0b8; margin-bottom:6px; }
-  .copyright{ font-size:12px; color:#777; }
+            color:
+                white;
 
-  @media (max-width:760px){
-    .grid{ grid-template-columns:1fr; }
-    .branding{ flex-direction:column; gap:8px; }
-  }
-</style>
+            overflow-x:
+                hidden;
+        }
+
+        a {
+            color:
+                inherit;
+        }
+
+
+        /* =====================================================
+           BACKGROUND
+        ===================================================== */
+
+        .background {
+            position:
+                fixed;
+
+            inset:
+                0;
+
+            overflow:
+                hidden;
+
+            z-index:
+                -10;
+
+            background:
+
+                radial-gradient(
+                    circle at 50% 10%,
+                    rgba(34,197,94,.20),
+                    transparent 35%
+                ),
+
+                radial-gradient(
+                    circle at 10% 60%,
+                    rgba(14,165,233,.12),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 90% 70%,
+                    rgba(250,204,21,.08),
+                    transparent 30%
+                ),
+
+                #020617;
+        }
+
+
+        /* =====================================================
+           FLOATING LIGHTS
+        ===================================================== */
+
+        .orb {
+            position:
+                absolute;
+
+            border-radius:
+                50%;
+
+            filter:
+                blur(80px);
+
+            opacity:
+                .30;
+
+            animation:
+                drift 15s ease-in-out infinite;
+        }
+
+        .orb1 {
+            width:
+                300px;
+
+            height:
+                300px;
+
+            background:
+                #16a34a;
+
+            top:
+                5%;
+
+            left:
+                -120px;
+        }
+
+        .orb2 {
+            width:
+                250px;
+
+            height:
+                250px;
+
+            background:
+                #2563eb;
+
+            top:
+                50%;
+
+            right:
+                -100px;
+
+            animation-delay:
+                -5s;
+        }
+
+        .orb3 {
+            width:
+                300px;
+
+            height:
+                300px;
+
+            background:
+                #eab308;
+
+            bottom:
+                -150px;
+
+            left:
+                35%;
+
+            animation-delay:
+                -10s;
+        }
+
+        @keyframes drift {
+
+            0%,100% {
+                transform:
+                    translate3d(0,0,0);
+            }
+
+            50% {
+                transform:
+                    translate3d(60px,-45px,0);
+            }
+        }
+
+
+        /* =====================================================
+           NAVIGATION
+        ===================================================== */
+
+        nav {
+            position:
+                sticky;
+
+            top:
+                0;
+
+            z-index:
+                1000;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            padding:
+                13px 5%;
+
+            min-height:
+                66px;
+
+            background:
+                rgba(2,6,23,.78);
+
+            backdrop-filter:
+                blur(18px);
+
+            border-bottom:
+                1px solid rgba(255,255,255,.12);
+
+            box-shadow:
+                0 10px 40px rgba(0,0,0,.25);
+        }
+
+        .brand {
+            font-size:
+                21px;
+
+            font-weight:
+                bold;
+
+            color:
+                #facc15;
+
+            white-space:
+                nowrap;
+        }
+
+        .nav-links {
+            list-style:
+                none;
+
+            display:
+                flex;
+
+            gap:
+                6px;
+
+            align-items:
+                center;
+        }
+
+        .nav-links a {
+            text-decoration:
+                none;
+
+            padding:
+                9px 12px;
+
+            border-radius:
+                25px;
+
+            color:
+                #dbeafe;
+
+            font-size:
+                14px;
+
+            transition:
+                .3s;
+        }
+
+        .nav-links a:hover {
+            background:
+                #166534;
+
+            color:
+                white;
+
+            transform:
+                translateY(-2px);
+        }
+
+        .menu-button {
+            display:
+                none;
+
+            border:
+                1px solid rgba(255,255,255,.15);
+
+            background:
+                rgba(255,255,255,.08);
+
+            color:
+                white;
+
+            font-size:
+                21px;
+
+            padding:
+                8px 11px;
+
+            border-radius:
+                10px;
+        }
+
+
+        /* =====================================================
+           HERO 3D
+        ===================================================== */
+
+        .hero {
+            min-height:
+                92vh;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            padding:
+                35px 12px;
+
+            perspective:
+                1800px;
+        }
+
+        .hero-card {
+            width:
+                min(1150px,96%);
+
+            position:
+                relative;
+
+            padding:
+                55px 20px 45px;
+
+            border-radius:
+                40px;
+
+            text-align:
+                center;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255,255,255,.14),
+                    rgba(255,255,255,.035)
+                );
+
+            border:
+                1px solid rgba(255,255,255,.18);
+
+            backdrop-filter:
+                blur(18px);
+
+            box-shadow:
+                0 50px 120px
+                rgba(0,0,0,.65),
+
+                inset
+                0 1px
+                rgba(255,255,255,.2);
+
+            transform-style:
+                preserve-3d;
+
+            transition:
+                transform .12s ease-out;
+        }
+
+
+        /* =====================================================
+           STADIUM LIGHTS
+        ===================================================== */
+
+        .stadium-lights {
+            position:
+                absolute;
+
+            inset:
+                0;
+
+            pointer-events:
+                none;
+
+            overflow:
+                hidden;
+
+            border-radius:
+                40px;
+        }
+
+        .light {
+            position:
+                absolute;
+
+            width:
+                8px;
+
+            height:
+                8px;
+
+            border-radius:
+                50%;
+
+            background:
+                #fef08a;
+
+            box-shadow:
+                0 0 12px #fde047,
+                0 0 30px #facc15;
+
+            animation:
+                blink 2s ease-in-out infinite;
+        }
+
+        .light:nth-child(1) { left: 8%; }
+        .light:nth-child(2) { left: 18%; }
+        .light:nth-child(3) { left: 28%; }
+        .light:nth-child(4) { left: 38%; }
+        .light:nth-child(5) { left: 48%; }
+        .light:nth-child(6) { left: 58%; }
+        .light:nth-child(7) { left: 68%; }
+        .light:nth-child(8) { left: 78%; }
+        .light:nth-child(9) { left: 88%; }
+
+        @keyframes blink {
+
+            0%,100% {
+                opacity:
+                    .25;
+            }
+
+            50% {
+                opacity:
+                    1;
+            }
+        }
+
+
+        /* =====================================================
+           THREE.JS CANVAS
+        ===================================================== */
+
+        #threeScene {
+            width:
+                100%;
+
+            height:
+                450px;
+
+            display:
+                block;
+
+            border-radius:
+                25px;
+
+            margin:
+                5px auto 20px;
+
+            transform:
+                translateZ(70px);
+
+            touch-action:
+                none;
+        }
+
+
+        /* =====================================================
+           HERO TEXT
+        ===================================================== */
+
+        .hero h1 {
+            font-size:
+                clamp(48px,10vw,105px);
+
+            letter-spacing:
+                clamp(2px,1vw,10px);
+
+            line-height:
+                1;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #facc15,
+                    #ffffff,
+                    #4ade80,
+                    #60a5fa,
+                    #facc15
+                );
+
+            background-size:
+                350%;
+
+            -webkit-background-clip:
+                text;
+
+            -webkit-text-fill-color:
+                transparent;
+
+            animation:
+                titleFlow 6s linear infinite;
+
+            transform:
+                translateZ(90px);
+        }
+
+        @keyframes titleFlow {
+
+            from {
+                background-position:
+                    0%;
+            }
+
+            to {
+                background-position:
+                    350%;
+            }
+        }
+
+        .hero-subtitle {
+            margin-top:
+                18px;
+
+            color:
+                #d1fae5;
+
+            font-size:
+                clamp(15px,3vw,23px);
+
+            transform:
+                translateZ(55px);
+        }
+
+        .hero-tagline {
+            margin-top:
+                8px;
+
+            color:
+                #fde68a;
+
+            transform:
+                translateZ(40px);
+        }
+
+
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
+
+        .buttons {
+            display:
+                flex;
+
+            justify-content:
+                center;
+
+            flex-wrap:
+                wrap;
+
+            gap:
+                13px;
+
+            margin-top:
+                28px;
+
+            transform:
+                translateZ(55px);
+        }
+
+        .btn {
+            display:
+                inline-flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            min-width:
+                165px;
+
+            padding:
+                14px 20px;
+
+            border-radius:
+                40px;
+
+            text-decoration:
+                none;
+
+            font-weight:
+                bold;
+
+            color:
+                white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #15803d,
+                    #16a34a
+                );
+
+            border:
+                1px solid rgba(255,255,255,.18);
+
+            box-shadow:
+                0 12px 30px
+                rgba(22,163,74,.30);
+
+            transition:
+                .35s;
+        }
+
+        .btn:hover {
+            transform:
+                translateY(-7px)
+                scale(1.04);
+
+            box-shadow:
+                0 20px 40px
+                rgba(22,163,74,.45);
+        }
+
+        .btn.gold {
+            background:
+                linear-gradient(
+                    135deg,
+                    #ca8a04,
+                    #fde047
+                );
+
+            color:
+                #111827;
+        }
+
+
+        /* =====================================================
+           MAIN
+        ===================================================== */
+
+        main {
+            width:
+                min(1150px,92%);
+
+            margin:
+                auto;
+        }
+
+
+        /* =====================================================
+           SECTIONS
+        ===================================================== */
+
+        section {
+            margin:
+                40px 0;
+
+            padding:
+                32px;
+
+            border-radius:
+                30px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255,255,255,.10),
+                    rgba(255,255,255,.035)
+                );
+
+            border:
+                1px solid rgba(255,255,255,.12);
+
+            backdrop-filter:
+                blur(15px);
+
+            box-shadow:
+                0 25px 70px
+                rgba(0,0,0,.30);
+
+            transition:
+                .4s;
+        }
+
+        section:hover {
+            transform:
+                translateY(-4px);
+
+            box-shadow:
+                0 35px 80px
+                rgba(0,0,0,.42);
+        }
+
+        section h2 {
+            color:
+                #facc15;
+
+            font-size:
+                clamp(25px,4vw,36px);
+
+            margin-bottom:
+                18px;
+        }
+
+        section p {
+            color:
+                #dcfce7;
+
+            line-height:
+                1.75;
+        }
+
+
+        /* =====================================================
+           CARDS
+        ===================================================== */
+
+        .cards {
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(185px,1fr)
+                );
+
+            gap:
+                18px;
+
+            perspective:
+                1200px;
+        }
+
+        .card {
+            min-height:
+                175px;
+
+            padding:
+                23px;
+
+            border-radius:
+                22px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(22,163,74,.18),
+                    rgba(59,130,246,.07)
+                );
+
+            border:
+                1px solid rgba(255,255,255,.12);
+
+            transform-style:
+                preserve-3d;
+
+            transition:
+                .35s;
+
+            box-shadow:
+                inset
+                0 1px
+                rgba(255,255,255,.1);
+        }
+
+        .card:hover {
+            transform:
+                perspective(800px)
+                rotateX(10deg)
+                rotateY(-10deg)
+                translateZ(30px)
+                translateY(-8px);
+
+            box-shadow:
+                -15px 22px 40px
+                rgba(0,0,0,.35);
+        }
+
+        .card .icon {
+            font-size:
+                45px;
+
+            transform:
+                translateZ(30px);
+        }
+
+        .card h3 {
+            color:
+                #facc15;
+
+            margin:
+                10px 0 8px;
+
+            transform:
+                translateZ(22px);
+        }
+
+        .card p {
+            transform:
+                translateZ(15px);
+        }
+
+
+        /* =====================================================
+           STATS
+        ===================================================== */
+
+        .stats {
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(150px,1fr)
+                );
+
+            gap:
+                16px;
+
+            perspective:
+                1000px;
+        }
+
+        .stat {
+            padding:
+                25px 15px;
+
+            text-align:
+                center;
+
+            border-radius:
+                20px;
+
+            background:
+                rgba(255,255,255,.05);
+
+            border:
+                1px solid rgba(255,255,255,.10);
+
+            transform-style:
+                preserve-3d;
+
+            transition:
+                .35s;
+        }
+
+        .stat:hover {
+            transform:
+                rotateX(10deg)
+                rotateY(-8deg)
+                translateZ(25px);
+        }
+
+        .stat-number {
+            font-size:
+                38px;
+
+            font-weight:
+                bold;
+
+            color:
+                #facc15;
+
+            transform:
+                translateZ(28px);
+        }
+
+        .stat-label {
+            margin-top:
+                8px;
+
+            color:
+                #bbf7d0;
+        }
+
+
+        /* =====================================================
+           SUBJECTS
+        ===================================================== */
+
+        .subjects {
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(180px,1fr)
+                );
+
+            gap:
+                18px;
+
+            perspective:
+                1100px;
+        }
+
+        .subject {
+            padding:
+                23px;
+
+            border-radius:
+                20px;
+
+            background:
+                rgba(255,255,255,.05);
+
+            transform-style:
+                preserve-3d;
+
+            transition:
+                .35s;
+        }
+
+        .subject:hover {
+            transform:
+                rotateX(8deg)
+                rotateY(-8deg)
+                translateZ(25px);
+        }
+
+        .subject h3 {
+            color:
+                #4ade80;
+
+            margin-bottom:
+                8px;
+        }
+
+        .subject.best {
+            border:
+                2px solid #facc15;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(250,204,21,.17),
+                    rgba(34,197,94,.08)
+                );
+
+            box-shadow:
+                0 0 30px
+                rgba(250,204,21,.12);
+        }
+
+        .subject.best h3 {
+            color:
+                #facc15;
+        }
+
+
+        /* =====================================================
+           MARKS
+        ===================================================== */
+
+        .table-wrap {
+            overflow-x:
+                auto;
+
+            border-radius:
+                18px;
+        }
+
+        table {
+            width:
+                100%;
+
+            min-width:
+                540px;
+
+            border-collapse:
+                collapse;
+        }
+
+        th {
+            background:
+                linear-gradient(
+                    90deg,
+                    #166534,
+                    #15803d
+                );
+
+            padding:
+                14px;
+        }
+
+        td {
+            padding:
+                14px;
+
+            border:
+                1px solid
+                rgba(255,255,255,.10);
+
+            text-align:
+                center;
+
+            background:
+                rgba(255,255,255,.04);
+        }
+
+        tr:hover td {
+            background:
+                rgba(34,197,94,.13);
+        }
+
+        .best-row td {
+            color:
+                #fef08a;
+
+            background:
+                rgba(250,204,21,.12);
+
+            font-weight:
+                bold;
+        }
+
+
+        /* =====================================================
+           SKILLS
+        ===================================================== */
+
+        .skill {
+            margin:
+                21px 0;
+        }
+
+        .skill-title {
+            display:
+                flex;
+
+            justify-content:
+                space-between;
+
+            margin-bottom:
+                8px;
+        }
+
+        .skill-title span:last-child {
+            color:
+                #facc15;
+        }
+
+        .bar {
+            height:
+                16px;
+
+            border-radius:
+                20px;
+
+            overflow:
+                hidden;
+
+            background:
+                rgba(255,255,255,.08);
+
+            box-shadow:
+                inset 0 2px 6px
+                rgba(0,0,0,.35);
+        }
+
+        .fill {
+            height:
+                100%;
+
+            width:
+                0;
+
+            border-radius:
+                20px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #16a34a,
+                    #22c55e,
+                    #facc15
+                );
+
+            box-shadow:
+                0 0 14px
+                rgba(34,197,94,.45);
+
+            transition:
+                width 1.7s ease;
+        }
+
+
+        /* =====================================================
+           3D PITCH FALLBACK / EXTRA
+        ===================================================== */
+
+        .pitch {
+            position:
+                relative;
+
+            width:
+                100%;
+
+            min-height:
+                210px;
+
+            overflow:
+                hidden;
+
+            border-radius:
+                25px;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #15803d,
+                    #166534
+                );
+
+            box-shadow:
+                inset 0 0 60px
+                rgba(0,0,0,.35);
+        }
+
+        .pitch-strip {
+            position:
+                absolute;
+
+            width:
+                28%;
+
+            height:
+                75%;
+
+            left:
+                36%;
+
+            top:
+                12%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #c9a875,
+                    #ead9b0,
+                    #c5a26d
+                );
+
+            transform:
+                perspective(500px)
+                rotateX(38deg);
+
+            border-radius:
+                8px;
+        }
+
+        .stump {
+            position:
+                absolute;
+
+            width:
+                9px;
+
+            height:
+                70px;
+
+            background:
+                #f8fafc;
+
+            border-radius:
+                5px;
+        }
+
+        .stump.one {
+            left:
+                25%;
+
+            top:
+                63px;
+        }
+
+        .stump.two {
+            left:
+                26.8%;
+
+            top:
+                63px;
+        }
+
+        .stump.three {
+            left:
+                28.6%;
+
+            top:
+                63px;
+        }
+
+
+        /* =====================================================
+           3D EMBED
+        ===================================================== */
+
+        .embed-wrap {
+            width:
+                100%;
+
+            overflow:
+                hidden;
+
+            border-radius:
+                20px;
+
+            border:
+                2px solid #22c55e;
+
+            background:
+                #000;
+
+            box-shadow:
+                0 25px 60px rgba(0,0,0,.45);
+        }
+
+        .embed-wrap iframe {
+            width:
+                100%;
+
+            height:
+                520px;
+
+            border:
+                0;
+
+            display:
+                block;
+        }
+
+
+        /* =====================================================
+           QUOTE
+        ===================================================== */
+
+        blockquote {
+            padding:
+                28px;
+
+            text-align:
+                center;
+
+            color:
+                #fef3c7;
+
+            font-size:
+                clamp(18px,3vw,26px);
+
+            line-height:
+                1.6;
+
+            border-left:
+                5px solid #facc15;
+
+            border-radius:
+                14px;
+
+            background:
+                rgba(255,255,255,.05);
+        }
+
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+
+        footer {
+            margin-top:
+                70px;
+
+            padding:
+                55px 20px;
+
+            text-align:
+                center;
+
+            background:
+                #020617;
+
+            border-top:
+                1px solid
+                rgba(255,255,255,.12);
+        }
+
+        footer h2 {
+            color:
+                #facc15;
+        }
+
+        footer p {
+            color:
+                #94a3b8;
+
+            margin:
+                7px;
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 820px) {
+
+            nav {
+                min-height:
+                    62px;
+            }
+
+            .menu-button {
+                display:
+                    block;
+            }
+
+            .nav-links {
+                display:
+                    none;
+
+                position:
+                    absolute;
+
+                top:
+                    62px;
+
+                left:
+                    0;
+
+                right:
+                    0;
+
+                padding:
+                    12px;
+
+                flex-direction:
+                    column;
+
+                background:
+                    rgba(2,6,23,.97);
+
+                backdrop-filter:
+                    blur(18px);
+
+                border-bottom:
+                    1px solid
+                    rgba(255,255,255,.12);
+            }
+
+            .nav-links.show {
+                display:
+                    flex;
+            }
+
+            .nav-links a {
+                text-align:
+                    center;
+            }
+
+            #threeScene {
+                height:
+                    360px;
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .hero {
+                min-height:
+                    90vh;
+
+                padding:
+                    20px 7px;
+            }
+
+            .hero-card {
+                padding:
+                    35px 13px;
+
+                border-radius:
+                    25px;
+            }
+
+            .stadium-lights {
+                border-radius:
+                    25px;
+            }
+
+            #threeScene {
+                height:
+                    300px;
+            }
+
+            .buttons {
+                flex-direction:
+                    column;
+            }
+
+            .btn {
+                width:
+                    100%;
+            }
+
+            main {
+                width:
+                    94%;
+            }
+
+            section {
+                padding:
+                    20px;
+
+                border-radius:
+                    22px;
+
+                margin:
+                    25px 0;
+            }
+
+            section h2 {
+                font-size:
+                    25px;
+            }
+
+            .embed-wrap iframe {
+                height:
+                    350px;
+            }
+
+        }
+
+
+        /* =====================================================
+           REDUCED MOTION
+        ===================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation:
+                    none !important;
+
+                transition:
+                    none !important;
+            }
+
+        }
+
+    </style>
+
 </head>
+
+
 <body>
 
-<canvas id="particle-canvas" aria-hidden="true"></canvas>
 
-<div class="wrap" role="main">
-  <div class="branding" role="banner">
-    <div class="logo-wrap" title="DevCove Logo (animated GIF)">
-      <!-- Replace logo.gif with your animated gif file -->
-      <img src="logo.gif" alt="DevCove Logo">
-    </div>
+<!-- ==========================================================
+     BACKGROUND
+=========================================================== -->
 
-    <div>
-      <h1>DevCove Marketplace</h1>
-      <div class="sub">AD FORMATTER V2</div>
-    </div>
-  </div>
+<div class="background">
 
-  <div class="grid">
-    <div>
-      <label for="adType">Ad Type</label>
-      <select id="adType" aria-label="Ad Type">
-        <option value="Hiring">Hiring</option>
-        <option value="For Hire">For Hire</option>
-        <option value="Selling">Selling</option>
-      </select>
-    </div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
 
-    <div>
-      <label for="ownerName">Post Owner Username (Required)</label>
-      <input id="ownerName" type="text" placeholder="@Username">
-    </div>
-
-    <div>
-      <label for="ownerId">Post Owner ID (Required)</label>
-      <input id="ownerId" type="text" inputmode="numeric" placeholder="123456789012345678">
-    </div>
-
-    <div class="full">
-      <label for="adContent">Ad Content</label>
-      <textarea id="adContent" placeholder="Write your ad here..."></textarea>
-    </div>
-  </div>
-
-  <div class="controls" role="toolbar">
-    <button class="btn generate" id="generateBtn">Generate Formatted Ad</button>
-    <button class="btn copy" id="copyBtn">💎 Copy To Clipboard</button>
-  </div>
-
-  <div class="error" id="errorBox" role="status" aria-live="polite"></div>
-
-  <label style="margin-top:14px;display:block;font-weight:700;color:#e7eef8;margin-bottom:6px">Formatted Discord Ad</label>
-  <textarea id="output" class="output" readonly aria-label="Formatted Ad Output"></textarea>
-
-  <div class="footer-credit" role="contentinfo">
-    <div class="credit-line">
-      Made by <span class="animated-name">@___devdark__</span> for <strong style="color:var(--accent1);">DevCove</strong>
-    </div>
-    <div class="version">Version 2.1.0</div>
-    <div class="copyright">© 2025 DevCove. All rights reserved.</div>
-  </div>
 </div>
 
-<script>
-/* ---------------------------
-   Particle background (Canvas)
-   --------------------------- */
-(function(){
-  const canvas = document.getElementById('particle-canvas');
-  const ctx = canvas.getContext('2d');
-  let W = canvas.width = window.innerWidth;
-  let H = canvas.height = window.innerHeight;
-  let particles = [];
-  let particleCount = Math.floor(Math.min(100, Math.max(30, (W*H)/90000))); // scale count by screen size
-  // colors pulled from accent gradient
-  const colors = [
-    {r: 0, g:198, b:255, a:0.10},
-    {r: 0, g:114, b:255, a:0.08},
-    {r: 255, g:213, b:79, a:0.06}
-  ];
 
-  function rand(min,max){ return Math.random()*(max-min)+min; }
+<!-- ==========================================================
+     NAVIGATION
+=========================================================== -->
 
-  function createParticle(i){
-    const size = rand(0.9, 3.2);
-    const p = {
-      x: Math.random() * W,
-      y: Math.random() * H,
-      vx: rand(-0.25, 0.25),
-      vy: rand(-0.3, -0.05), // slight upward drift
-      size: size,
-      baseSize: size,
-      color: colors[Math.floor(Math.random()*colors.length)],
-      life: rand(80, 220) + Math.random()*200,
-      phase: Math.random()*Math.PI*2
-    };
-    particles[i] = p;
-  }
+<nav>
 
-  function init(){
-    particles = [];
-    for(let i=0;i<particleCount;i++) createParticle(i);
-  }
+    <div class="brand">
+        🏏 PARTH 3D
+    </div>
 
-  function resize(){
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    // recalc count lightly on resize
-    particleCount = Math.floor(Math.min(120, Math.max(20, (W*H)/90000)));
-    init();
-  }
 
-  window.addEventListener('resize', resize);
+    <button
+        class="menu-button"
+        onclick="toggleMenu()">
 
-  function draw(){
-    ctx.clearRect(0,0,W,H);
+        ☰
 
-    for(let i=0;i<particles.length;i++){
-      const p = particles[i];
-      // gentle sinusoidal size change for twinkle
-      p.phase += 0.01 + Math.random()*0.01;
-      const twinkle = 0.9 + 0.2 * Math.sin(p.phase*1.5);
-      const r = p.size * twinkle;
+    </button>
 
-      // draw radial glow
-      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, Math.max(r*3, 8));
-      const c = p.color;
-      grad.addColorStop(0, `rgba(${c.r},${c.g},${c.b},${c.a})`);
-      grad.addColorStop(0.6, `rgba(${c.r},${c.g},${c.b},${c.a*0.25})`);
-      grad.addColorStop(1, `rgba(${c.r},${c.g},${c.b},0)`);
-      ctx.beginPath();
-      ctx.fillStyle = grad;
-      ctx.arc(p.x, p.y, Math.max(r*2, 4), 0, Math.PI*2);
-      ctx.fill();
 
-      // move
-      p.x += p.vx + Math.sin(p.phase)*0.05;
-      p.y += p.vy;
+    <ul
+        class="nav-links"
+        id="navLinks">
 
-      // gentle horizontal wrap and vertical wrap from bottom to top
-      if(p.x < -20) p.x = W + 20;
-      if(p.x > W + 20) p.x = -20;
-      if(p.y < -30) p.y = H + 20;
-      if(p.y > H + 40) p.y = -40;
+        <li>
+            <a href="#about">
+                About
+            </a>
+        </li>
+
+        <li>
+            <a href="#cricket">
+                Cricket
+            </a>
+        </li>
+
+        <li>
+            <a href="#studies">
+                Studies
+            </a>
+        </li>
+
+        <li>
+            <a href="#marks">
+                Marks
+            </a>
+        </li>
+
+        <li>
+            <a href="#skills">
+                Skills
+            </a>
+        </li>
+
+        <li>
+            <a href="#stadium">
+                3D Stadium
+            </a>
+        </li>
+
+    </ul>
+
+</nav>
+
+
+<!-- ==========================================================
+     HERO
+=========================================================== -->
+
+<div class="hero">
+
+    <div
+        class="hero-card"
+        id="heroCard">
+
+
+        <div class="stadium-lights">
+
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+
+        </div>
+
+
+        <!-- REAL WEBGL 3D -->
+
+        <canvas id="threeScene"></canvas>
+
+
+        <h1>
+            PARTH
+        </h1>
+
+
+        <p class="hero-subtitle">
+
+            🏏 CRICKET LOVER
+            •
+            🌍 SST STAR
+            •
+            💻 YOUNG CODER
+
+        </p>
+
+
+        <p class="hero-tagline">
+
+            Welcome to my ultra 3D cricket world 🚀
+
+        </p>
+
+
+        <div class="buttons">
+
+            <a
+                class="btn"
+                href="#cricket">
+
+                🏏 Cricket Zone
+
+            </a>
+
+
+            <a
+                class="btn gold"
+                href="#marks">
+
+                📊 My Scoreboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<main>
+
+
+<!-- ==========================================================
+     ABOUT
+=========================================================== -->
+
+<section id="about">
+
+    <h2>
+        👋 About Parth
+    </h2>
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="icon">
+                😎
+            </div>
+
+            <h3>
+                Class 8
+            </h3>
+
+            <p>
+                A student who enjoys
+                learning and exploring.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="icon">
+                🏏
+            </div>
+
+            <h3>
+                Cricket Lover
+            </h3>
+
+            <p>
+                Cricket is Parth's
+                favourite sport.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="icon">
+                🌍
+            </div>
+
+            <h3>
+                SST Star
+            </h3>
+
+            <p>
+                Social Science is one
+                of Parth's strongest areas.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="icon">
+                💻
+            </div>
+
+            <h3>
+                Young Coder
+            </h3>
+
+            <p>
+                Enjoys learning HTML
+                and technology.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     CRICKET
+=========================================================== -->
+
+<section id="cricket">
+
+    <h2>
+        🏏 Parth's Cricket Universe
+    </h2>
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="icon">
+                🏏
+            </div>
+
+            <h3>
+                Favourite Sport
+            </h3>
+
+            <p>
+                Cricket
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="icon">
+                🔥
+            </div>
+
+            <h3>
+                Passion
+            </h3>
+
+            <p>
+                Playing cricket
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="icon">
+                📺
+            </div>
+
+            <h3>
+                Enjoys Watching
+            </h3>
+
+            <p>
+                Cricket matches
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="icon">
+                🏆
+            </div>
+
+            <h3>
+                Dream
+            </h3>
+
+            <p>
+                Keep improving
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     STATS
+=========================================================== -->
+
+<section>
+
+    <h2>
+        📈 Cricket Dashboard
+    </h2>
+
+
+    <div class="stats">
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                100%
+            </div>
+
+            <div class="stat-label">
+                Cricket Passion
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                🏏
+            </div>
+
+            <div class="stat-label">
+                Favourite Sport
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                ⭐
+            </div>
+
+            <div class="stat-label">
+                Game Spirit
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                🚀
+            </div>
+
+            <div class="stat-label">
+                Big Dreams
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     3D PITCH
+=========================================================== -->
+
+<section>
+
+    <h2>
+        🏟️ 3D Cricket Pitch Zone
+    </h2>
+
+
+    <div class="pitch">
+
+        <div class="pitch-strip"></div>
+
+        <div class="stump one"></div>
+        <div class="stump two"></div>
+        <div class="stump three"></div>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     STUDIES
+=========================================================== -->
+
+<section id="studies">
+
+    <h2>
+        📚 Study Zone
+    </h2>
+
+
+    <div class="subjects">
+
+
+        <div class="subject best">
+
+            <h3>
+                🌍 SST ⭐
+            </h3>
+
+            <p>
+
+                One of Parth's strongest
+                subjects. History, geography
+                and civics are especially
+                interesting.
+
+            </p>
+
+        </div>
+
+
+        <div class="subject">
+
+            <h3>
+                💻 Computer
+            </h3>
+
+            <p>
+                HTML, websites and technology.
+            </p>
+
+        </div>
+
+
+        <div class="subject">
+
+            <h3>
+                🔬 Science
+            </h3>
+
+            <p>
+                Understanding how things work.
+            </p>
+
+        </div>
+
+
+        <div class="subject">
+
+            <h3>
+                ➗ Maths
+            </h3>
+
+            <p>
+                Problem solving and puzzles.
+            </p>
+
+        </div>
+
+
+        <div class="subject">
+
+            <h3>
+                📖 English
+            </h3>
+
+            <p>
+                Reading and communication.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     MARKS
+=========================================================== -->
+
+<section id="marks">
+
+    <h2>
+        📊 Academic Scoreboard
+    </h2>
+
+
+    <div class="table-wrap">
+
+        <table>
+
+            <tr>
+
+                <th>
+                    Subject
+                </th>
+
+                <th>
+                    Marks
+                </th>
+
+                <th>
+                    Total
+                </th>
+
+                <th>
+                    Grade
+                </th>
+
+            </tr>
+
+
+            <tr class="best-row">
+
+                <td>
+                    🌍 SST
+                </td>
+
+                <td>
+                    97
+                </td>
+
+                <td>
+                    100
+                </td>
+
+                <td>
+                    A+
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>
+                    💻 Computer
+                </td>
+
+                <td>
+                    95
+                </td>
+
+                <td>
+                    100
+                </td>
+
+                <td>
+                    A+
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>
+                    🔬 Science
+                </td>
+
+                <td>
+                    91
+                </td>
+
+                <td>
+                    100
+                </td>
+
+                <td>
+                    A+
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>
+                    ➗ Maths
+                </td>
+
+                <td>
+                    89
+                </td>
+
+                <td>
+                    100
+                </td>
+
+                <td>
+                    A
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>
+                    📖 English
+                </td>
+
+                <td>
+                    87
+                </td>
+
+                <td>
+                    100
+                </td>
+
+                <td>
+                    A
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     SKILLS
+=========================================================== -->
+
+<section id="skills">
+
+    <h2>
+        💪 Skill Meter
+    </h2>
+
+
+    <div class="skill">
+
+        <div class="skill-title">
+
+            <span>
+                🏏 Cricket
+            </span>
+
+            <span>
+                95%
+            </span>
+
+        </div>
+
+
+        <div class="bar">
+
+            <div
+                class="fill"
+                data-width="95%">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="skill">
+
+        <div class="skill-title">
+
+            <span>
+                🌍 SST
+            </span>
+
+            <span>
+                97%
+            </span>
+
+        </div>
+
+
+        <div class="bar">
+
+            <div
+                class="fill"
+                data-width="97%">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="skill">
+
+        <div class="skill-title">
+
+            <span>
+                💻 Computer
+            </span>
+
+            <span>
+                90%
+            </span>
+
+        </div>
+
+
+        <div class="bar">
+
+            <div
+                class="fill"
+                data-width="90%">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="skill">
+
+        <div class="skill-title">
+
+            <span>
+                🎯 Problem Solving
+            </span>
+
+            <span>
+                85%
+            </span>
+
+        </div>
+
+
+        <div class="bar">
+
+            <div
+                class="fill"
+                data-width="85%">
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     CRICKET 3D MESSAGE
+=========================================================== -->
+
+<section>
+
+    <h2>
+        🏏 Cricket Mindset
+    </h2>
+
+
+    <blockquote>
+
+        "Every ball is a new opportunity.
+        Stay focused, play smart,
+        and keep improving!" 🔥
+
+    </blockquote>
+
+</section>
+
+
+<!-- ==========================================================
+     REAL 3D STADIUM
+=========================================================== -->
+
+<section id="stadium">
+
+    <h2>
+        🏟️ Explore a Real 3D Cricket Stadium
+    </h2>
+
+
+    <p>
+
+        This section uses an external
+        3D cricket stadium model.
+
+    </p>
+
+
+    <br>
+
+
+    <div class="embed-wrap">
+
+        <iframe
+            title="3D Cricket Stadium"
+            src="https://sketchfab.com/models/d088ff7bbb0a477ab6dd492865d38f3b/embed"
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            allowfullscreen>
+        </iframe>
+
+    </div>
+
+
+    <br>
+
+
+    <p style="font-size:13px;color:#94a3b8;">
+
+        Stadium model:
+        "Ekana Stadium Low Poly Lucknow City game asset"
+        by Shayan, used under Creative Commons Attribution.
+        
+    </p>
+
+</section>
+
+
+<!-- ==========================================================
+     CRICKET LINKS
+=========================================================== -->
+
+<section>
+
+    <h2>
+        🌐 Cricket Zone
+    </h2>
+
+
+    <div class="buttons">
+
+
+        <a
+            class="btn"
+            href="https://www.icc-cricket.com/"
+            target="_blank">
+
+            🏆 ICC Cricket
+
+        </a>
+
+
+        <a
+            class="btn gold"
+            href="https://www.espncricinfo.com/"
+            target="_blank">
+
+            🏏 ESPNcricinfo
+
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- ==========================================================
+     FINAL
+=========================================================== -->
+
+<section>
+
+    <h2>
+        🚀 Keep Going, Parth!
+    </h2>
+
+
+    <p>
+
+        Keep playing cricket.
+        Keep learning SST.
+        Keep experimenting with technology.
+        And keep chasing bigger goals.
+
+    </p>
+
+
+    <div class="buttons">
+
+        <a
+            class="btn"
+            href="#">
+
+            ⬆ Back to Top
+
+        </a>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+<!-- ==========================================================
+     FOOTER
+=========================================================== -->
+
+<footer>
+
+    <h2>
+        🏏 PARTH'S 3D CRICKET WORLD
+    </h2>
+
+    <p>
+        Cricket • SST • Coding • Dreams
+    </p>
+
+    <br>
+
+    <p>
+        Built with HTML + CSS + Three.js
+    </p>
+
+    <p>
+        © 2026 Parth
+    </p>
+
+</footer>
+
+
+<!-- ==========================================================
+     THREE.JS
+=========================================================== -->
+
+<script type="module">
+
+    import * as THREE
+        from "three";
+
+    import {
+        OrbitControls
+    }
+    from "three/addons/controls/OrbitControls.js";
+
+
+    /* =========================================================
+       CANVAS
+    ========================================================= */
+
+    const canvas =
+        document.getElementById("threeScene");
+
+
+    /* =========================================================
+       SCENE
+    ========================================================= */
+
+    const scene =
+        new THREE.Scene();
+
+    scene.fog =
+        new THREE.FogExp2(
+            0x03140a,
+            0.028
+        );
+
+
+    /* =========================================================
+       CAMERA
+    ========================================================= */
+
+    const camera =
+        new THREE.PerspectiveCamera(
+            50,
+            canvas.clientWidth /
+            canvas.clientHeight,
+            0.1,
+            1000
+        );
+
+    camera.position.set(
+        8,
+        6,
+        10
+    );
+
+
+    /* =========================================================
+       RENDERER
+    ========================================================= */
+
+    const renderer =
+        new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: true
+        });
+
+    renderer.setPixelRatio(
+        Math.min(
+            window.devicePixelRatio,
+            2
+        )
+    );
+
+    renderer.setSize(
+        canvas.clientWidth,
+        canvas.clientHeight,
+        false
+    );
+
+    renderer.shadowMap.enabled = true;
+
+    renderer.shadowMap.type =
+        THREE.PCFSoftShadowMap;
+
+
+    /* =========================================================
+       CONTROLS
+    ========================================================= */
+
+    const controls =
+        new OrbitControls(
+            camera,
+            renderer.domElement
+        );
+
+    controls.enableDamping = true;
+
+    controls.dampingFactor = 0.06;
+
+    controls.enablePan = false;
+
+    controls.minDistance = 6;
+
+    controls.maxDistance = 18;
+
+    controls.maxPolarAngle =
+        Math.PI * 0.48;
+
+    controls.target.set(
+        0,
+        1,
+        0
+    );
+
+
+    /* =========================================================
+       LIGHTING
+    ========================================================= */
+
+    const ambient =
+        new THREE.AmbientLight(
+            0xffffff,
+            1.3
+        );
+
+    scene.add(ambient);
+
+
+    const moon =
+        new THREE.DirectionalLight(
+            0x9bd4ff,
+            2.2
+        );
+
+    moon.position.set(
+        -8,
+        12,
+        5
+    );
+
+    moon.castShadow = true;
+
+    moon.shadow.mapSize.width = 2048;
+
+    moon.shadow.mapSize.height = 2048;
+
+    scene.add(moon);
+
+
+    const greenLight =
+        new THREE.PointLight(
+            0x22c55e,
+            15,
+            30
+        );
+
+    greenLight.position.set(
+        0,
+        7,
+        0
+    );
+
+    scene.add(greenLight);
+
+
+    const goldLight =
+        new THREE.PointLight(
+            0xfacc15,
+            8,
+            25
+        );
+
+    goldLight.position.set(
+        6,
+        4,
+        -5
+    );
+
+    scene.add(goldLight);
+
+
+    /* =========================================================
+       STADIUM GROUND
+    ========================================================= */
+
+    const groundGeometry =
+        new THREE.CylinderGeometry(
+            8,
+            8,
+            0.7,
+            64
+        );
+
+    const groundMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x166534,
+            roughness: 0.8,
+            metalness: 0.05
+        });
+
+    const ground =
+        new THREE.Mesh(
+            groundGeometry,
+            groundMaterial
+        );
+
+    ground.position.y =
+        -0.35;
+
+    ground.receiveShadow =
+        true;
+
+    scene.add(ground);
+
+
+    /* =========================================================
+       OUTER RING
+    ========================================================= */
+
+    const ringGeometry =
+        new THREE.TorusGeometry(
+            8,
+            0.18,
+            16,
+            96
+        );
+
+    const ringMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xfacc15,
+            emissive: 0x5a4300,
+            emissiveIntensity: 0.5,
+            metalness: 0.8,
+            roughness: 0.25
+        });
+
+    const ring =
+        new THREE.Mesh(
+            ringGeometry,
+            ringMaterial
+        );
+
+    ring.rotation.x =
+        Math.PI / 2;
+
+    scene.add(ring);
+
+
+    /* =========================================================
+       CRICKET PITCH
+    ========================================================= */
+
+    const pitchGeometry =
+        new THREE.BoxGeometry(
+            3,
+            0.12,
+            8
+        );
+
+    const pitchMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xd8bf94,
+            roughness: 0.95
+        });
+
+    const pitch =
+        new THREE.Mesh(
+            pitchGeometry,
+            pitchMaterial
+        );
+
+    pitch.position.y =
+        0.08;
+
+    pitch.receiveShadow =
+        true;
+
+    scene.add(pitch);
+
+
+    /* =========================================================
+       PITCH LINES
+    ========================================================= */
+
+    const lineMaterial =
+        new THREE.MeshBasicMaterial({
+            color: 0xffffff
+        });
+
+
+    function createLine(
+        x,
+        z,
+        width,
+        depth
+    ) {
+
+        const geometry =
+            new THREE.BoxGeometry(
+                width,
+                0.035,
+                depth
+            );
+
+        const mesh =
+            new THREE.Mesh(
+                geometry,
+                lineMaterial
+            );
+
+        mesh.position.set(
+            x,
+            0.15,
+            z
+        );
+
+        scene.add(mesh);
     }
 
-    requestAnimationFrame(draw);
-  }
 
-  // pause animation when tab not visible to save CPU
-  let running = true;
-  document.addEventListener('visibilitychange', function(){
-    running = !document.hidden;
-    if(running) requestAnimationFrame(draw);
-  });
+    createLine(
+        0,
+        3.35,
+        2.2,
+        0.08
+    );
 
-  init();
-  requestAnimationFrame(draw);
-})();
+    createLine(
+        0,
+        -3.35,
+        2.2,
+        0.08
+    );
 
-/* ---------------------------
-   Main UI logic (generate/copy)
-   --------------------------- */
-(function(){
-  const adTypeEl = document.getElementById("adType");
-  const ownerNameEl = document.getElementById("ownerName");
-  const ownerIdEl = document.getElementById("ownerId");
-  const adContentEl = document.getElementById("adContent");
-  const errorBox = document.getElementById("errorBox");
-  const outputEl = document.getElementById("output");
-  const generateBtn = document.getElementById("generateBtn");
-  const copyBtn = document.getElementById("copyBtn");
 
-  function getPing(type){
-    if(type === "Hiring") return "@For-hire ping";
-    if(type === "For Hire") return "@Hiring ping";
-    if(type === "Selling") return "@Selling ping";
-    return "";
-  }
+    /* =========================================================
+       STUMPS
+    ========================================================= */
 
-  function validate(ownerName, ownerId, content){
-    if(!ownerName || !ownerId){
-      return "Post Owner Username and Owner ID are MANDATORY.";
-    }
-    if(!/^\d+$/.test(ownerId)){
-      return "Owner ID must contain numbers only.";
-    }
-    if(!content){
-      return "Ad Content cannot be empty.";
-    }
-    return "";
-  }
+    function createStumps(z) {
 
-  function buildFormatted(ownerName, ownerId, content, type){
-    const ping = getPing(type);
-    return `**⚠️ PLEASE MESSAGE THE POST OWNER, STAFF WILL NOT RESPOND ⚠️**
+        for (let i = -1; i <= 1; i++) {
 
-${content}
+            const geometry =
+                new THREE.CylinderGeometry(
+                    0.07,
+                    0.07,
+                    1.05,
+                    16
+                );
 
-**AD OWNER:** ${ownerName} (<@${ownerId}>)
+            const material =
+                new THREE.MeshStandardMaterial({
+                    color: 0xf8fafc,
+                    roughness: 0.35
+                });
 
-**⚠️ PLEASE MESSAGE THE POST OWNER, STAFF WILL NOT RESPOND ⚠️**
-**---------------------------------------------------------- **
+            const stump =
+                new THREE.Mesh(
+                    geometry,
+                    material
+                );
 
-${ping}`;
-  }
+            stump.position.set(
+                i * 0.22,
+                0.65,
+                z
+            );
 
-  generateBtn.addEventListener("click", function(){
-    errorBox.textContent = "";
-    const ownerName = ownerNameEl.value.trim();
-    const ownerId = ownerIdEl.value.trim();
-    const content = adContentEl.value.trim();
-    const type = adTypeEl.value;
+            stump.castShadow =
+                true;
 
-    const err = validate(ownerName, ownerId, content);
-    if(err){
-      errorBox.textContent = err;
-      outputEl.value = "";
-      return;
+            scene.add(stump);
+
+        }
+
     }
 
-    outputEl.value = buildFormatted(ownerName, ownerId, content, type);
-    outputEl.focus();
-    outputEl.select();
-  });
 
-  copyBtn.addEventListener("click", async function(){
-    const text = outputEl.value.trim();
-    if(!text){
-      errorBox.textContent = "Generate the ad first before copying.";
-      return;
-    }
-    try{
-      await navigator.clipboard.writeText(text);
-      copyBtn.textContent = "✅ Copied";
-      setTimeout(()=> { copyBtn.innerHTML = "💎 Copy To Clipboard"; }, 1400);
-    }catch(e){
-      // fallback
-      outputEl.select();
-      try{
-        document.execCommand('copy');
-        copyBtn.textContent = "✅ Copied";
-        setTimeout(()=> { copyBtn.innerHTML = "💎 Copy To Clipboard"; }, 1400);
-      }catch(err){
-        alert("Could not copy automatically. Please select and copy manually.");
-      }
-    }
-  });
+    createStumps(
+        -3.2
+    );
 
-})();
+    createStumps(
+        3.2
+    );
+
+
+    /* =========================================================
+       CRICKET BALL
+    ========================================================= */
+
+    const ballGeometry =
+        new THREE.SphereGeometry(
+            0.55,
+            48,
+            48
+        );
+
+    const ballMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xc1121f,
+            roughness: 0.32,
+            metalness: 0.08
+        });
+
+    const ball =
+        new THREE.Mesh(
+            ballGeometry,
+            ballMaterial
+        );
+
+    ball.position.set(
+        0,
+        1,
+        0
+    );
+
+    ball.castShadow =
+        true;
+
+    scene.add(ball);
+
+
+    /* Ball seam */
+
+    const seamGeometry =
+        new THREE.TorusGeometry(
+            0.39,
+            0.025,
+            10,
+            64
+        );
+
+    const seamMaterial =
+        new THREE.MeshBasicMaterial({
+            color: 0xffffff
+        });
+
+    const seam =
+        new THREE.Mesh(
+            seamGeometry,
+            seamMaterial
+        );
+
+    seam.rotation.y =
+        Math.PI / 2;
+
+    ball.add(seam);
+
+
+    /* =========================================================
+       CRICKET BAT
+    ========================================================= */
+
+    const batGroup =
+        new THREE.Group();
+
+
+    const batBladeGeometry =
+        new THREE.BoxGeometry(
+            0.75,
+            3.2,
+            0.28
+        );
+
+    const batBladeMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xd5a66c,
+            roughness: 0.55,
+            metalness: 0.02
+        });
+
+    const batBlade =
+        new THREE.Mesh(
+            batBladeGeometry,
+            batBladeMaterial
+        );
+
+    batBlade.position.y =
+        1.25;
+
+    batBlade.castShadow =
+        true;
+
+    batGroup.add(
+        batBlade
+    );
+
+
+    const handleGeometry =
+        new THREE.CylinderGeometry(
+            0.13,
+            0.16,
+            1.55,
+            24
+        );
+
+    const handleMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x334155,
+            roughness: 0.65
+        });
+
+    const handle =
+        new THREE.Mesh(
+            handleGeometry,
+            handleMaterial
+        );
+
+    handle.position.y =
+        3.55;
+
+    handle.castShadow =
+        true;
+
+    batGroup.add(
+        handle
+    );
+
+
+    batGroup.position.set(
+        -3.5,
+        0,
+        0
+    );
+
+    batGroup.rotation.z =
+        THREE.MathUtils.degToRad(
+            -12
+        );
+
+    scene.add(
+        batGroup
+    );
+
+
+    /* =========================================================
+       FLOATING CRICKET ICONS
+    ========================================================= */
+
+    const floatingBalls = [];
+
+
+    for (
+        let i = 0;
+        i < 7;
+        i++
+    ) {
+
+        const geometry =
+            new THREE.SphereGeometry(
+                0.12,
+                16,
+                16
+            );
+
+        const material =
+            new THREE.MeshBasicMaterial({
+                color:
+                    i % 2
+                        ? 0xfacc15
+                        : 0x4ade80
+            });
+
+        const mesh =
+            new THREE.Mesh(
+                geometry,
+                material
+            );
+
+        mesh.position.set(
+            (Math.random() - .5) * 13,
+            2 + Math.random() * 4,
+            (Math.random() - .5) * 10
+        );
+
+        scene.add(
+            mesh
+        );
+
+        floatingBalls.push(
+            mesh
+        );
+
+    }
+
+
+    /* =========================================================
+       DECORATIVE LIGHTS
+    ========================================================= */
+
+    const stadiumLights =
+        new THREE.Group();
+
+
+    for (
+        let i = 0;
+        i < 12;
+        i++
+    ) {
+
+        const angle =
+            (i / 12) *
+            Math.PI * 2;
+
+        const x =
+            Math.cos(angle) *
+            7;
+
+        const z =
+            Math.sin(angle) *
+            7;
+
+
+        const poleGeometry =
+            new THREE.CylinderGeometry(
+                0.08,
+                0.08,
+                4,
+                10
+            );
+
+        const poleMaterial =
+            new THREE.MeshStandardMaterial({
+                color: 0x64748b,
+                metalness: .75,
+                roughness: .3
+            });
+
+        const pole =
+            new THREE.Mesh(
+                poleGeometry,
+                poleMaterial
+            );
+
+        pole.position.set(
+            x,
+            2,
+            z
+        );
+
+        scene.add(
+            pole
+        );
+
+
+        const light =
+            new THREE.PointLight(
+                0xffffaa,
+                3,
+                7
+            );
+
+        light.position.set(
+            x,
+            4.1,
+            z
+        );
+
+        scene.add(
+            light
+        );
+
+    }
+
+
+    /* =========================================================
+       RESIZE
+    ========================================================= */
+
+    function resize() {
+
+        const width =
+            canvas.clientWidth;
+
+        const height =
+            canvas.clientHeight;
+
+        camera.aspect =
+            width / height;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            width,
+            height,
+            false
+        );
+
+        renderer.setPixelRatio(
+            Math.min(
+                window.devicePixelRatio,
+                2
+            )
+        );
+
+    }
+
+
+    window.addEventListener(
+        "resize",
+        resize
+    );
+
+    resize();
+
+
+    /* =========================================================
+       ANIMATION
+    ========================================================= */
+
+    const clock =
+        new THREE.Clock();
+
+
+    function animate() {
+
+        requestAnimationFrame(
+            animate
+        );
+
+
+        const time =
+            clock.getElapsedTime();
+
+
+        /* Rotating ball */
+
+        ball.rotation.y +=
+            0.03;
+
+        ball.position.y =
+            1 +
+            Math.sin(time * 2) *
+            0.16;
+
+
+        /* Bat movement */
+
+        batGroup.rotation.y =
+            Math.sin(time * .8) *
+            0.12;
+
+        batGroup.rotation.z =
+            THREE.MathUtils.degToRad(-12)
+            +
+            Math.sin(time * 1.2)
+            * 0.08;
+
+
+        /* Floating particles */
+
+        floatingBalls.forEach(
+            function(
+                mesh,
+                index
+            ) {
+
+                mesh.position.y +=
+                    Math.sin(
+                        time * 1.2 +
+                        index
+                    ) *
+                    0.002;
+
+                mesh.rotation.x +=
+                    0.01;
+
+                mesh.rotation.y +=
+                    0.02;
+
+            }
+        );
+
+
+        /* Lights pulse */
+
+        greenLight.intensity =
+            14 +
+            Math.sin(time * 2) *
+            4;
+
+        goldLight.intensity =
+            7 +
+            Math.sin(time * 1.5) *
+            2;
+
+
+        controls.update();
+
+        renderer.render(
+            scene,
+            camera
+        );
+
+    }
+
+
+    animate();
+
+
 </script>
+
+
+<script>
+
+    /* =========================================================
+       MOBILE MENU
+    ========================================================= */
+
+    function toggleMenu() {
+
+        document
+            .getElementById("navLinks")
+            .classList.toggle("show");
+
+    }
+
+
+    /* Close mobile menu */
+
+    document
+        .querySelectorAll(
+            ".nav-links a"
+        )
+        .forEach(
+            function(link) {
+
+                link.addEventListener(
+                    "click",
+                    function() {
+
+                        document
+                            .getElementById(
+                                "navLinks"
+                            )
+                            .classList.remove(
+                                "show"
+                            );
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* =========================================================
+       HERO 3D TILT
+    ========================================================= */
+
+    const hero =
+        document.getElementById(
+            "heroCard"
+        );
+
+
+    hero.addEventListener(
+        "mousemove",
+        function(event) {
+
+            if (
+                window.innerWidth < 800
+            ) {
+                return;
+            }
+
+
+            const rect =
+                hero.getBoundingClientRect();
+
+
+            const x =
+                event.clientX -
+                rect.left;
+
+            const y =
+                event.clientY -
+                rect.top;
+
+
+            const centerX =
+                rect.width / 2;
+
+            const centerY =
+                rect.height / 2;
+
+
+            const rotateY =
+                ((x - centerX) /
+                 centerX) * 6;
+
+
+            const rotateX =
+                -((y - centerY) /
+                  centerY) * 6;
+
+
+            hero.style.transform =
+                "rotateX(" +
+                rotateX +
+                "deg) rotateY(" +
+                rotateY +
+                "deg)";
+
+        }
+    );
+
+
+    hero.addEventListener(
+        "mouseleave",
+        function() {
+
+            hero.style.transform =
+                "rotateX(0deg) rotateY(0deg)";
+
+        }
+    );
+
+
+    /* =========================================================
+       SKILL BARS
+    ========================================================= */
+
+    const bars =
+        document.querySelectorAll(
+            ".fill"
+        );
+
+
+    const observer =
+        new IntersectionObserver(
+            function(entries) {
+
+                entries.forEach(
+                    function(entry) {
+
+                        if (
+                            entry.isIntersecting
+                        ) {
+
+                            entry.target.style.width =
+                                entry.target.dataset.width;
+
+                        }
+
+                    }
+                );
+
+            },
+            {
+                threshold:
+                    0.4
+            }
+        );
+
+
+    bars.forEach(
+        function(bar) {
+
+            observer.observe(
+                bar
+            );
+
+        }
+    );
+
+
+</script>
+
+
 </body>
 
 </html>
